@@ -113,7 +113,9 @@ class CRig
     static int v;
     static int f;
     static void prepareVectors(AFITCoin &x);
-    vector<uint32_t> shortVectors;
+    static void printVectors(vector<int>& vectors);
+    static void printVectors(vector<uint32_t>& vectors);
+    static int swapBits(unsigned int n, unsigned int p1, unsigned int p2);
 };
 
 //via geeksforgeeks
@@ -157,24 +159,80 @@ unsigned int CRig::countSetBits(int n)
     return count;
 }
 
+//via geeksforgeeks
+int CRig::swapBits(unsigned int n, unsigned int p1, unsigned int p2)
+{
+    /* Move p1'th to rightmost side */
+    unsigned int bit1 =  (n >> p1) & 1;
+
+    /* Move p2'th to rightmost side */
+    unsigned int bit2 =  (n >> p2) & 1;
+
+    /* XOR the two bits */
+    unsigned int x = (bit1 ^ bit2);
+
+    /* Put the xor bit back to their original positions */
+    x = (x << p1) | (x << p2);
+
+    /* XOR 'x' with the original number so that the
+       two sets are swapped */
+    unsigned int result = n ^ x;
+
+    return result;
+}
+
+void CRig::printVectors(vector<int>& vectors){
+    for (unsigned int i = 0; i < vectors.size(); i++) {
+        printf(" %d ", vectors[i]);
+    }
+    printf("\n");
+}
+
+void CRig::printVectors(vector<uint32_t>& vectors){
+    for (unsigned int i = 0; i < vectors.size(); i++) {
+        bin(vectors[i]);
+        printf("\n");
+    }
+    printf("\n");
+}
+
 void CRig::prepareVectors(AFITCoin &x){
     vector<int> indexes;
+    vector<uint32_t> shortVectors;
     int mask;
-    uint32_t testedBit;
+    uint32_t testedBit1;
+    uint32_t testedBit2;
 
+    //find out indexes of varyingbits
     for (uint32_t i = 0; i < 32; i++) { //through all bits
         mask = 1 << i;
-        printf("___________________________________\n");
-        printf("i = %d Mask is: \n", i);
-        bin(mask);
-        printf("\n");
-
-        for(uint32_t j = 0; j != x->m_Vectors.size(); j++) { //for each vector
-            testedBit = x->m_Vectors[j] & mask;
-            bin(testedBit);
-            printf("\n");
+        for(uint32_t j = 0; j != x->m_Vectors.size() - 1; j++) { //for each vector
+            testedBit1 = x->m_Vectors[j] & mask;
+            testedBit2 = x->m_Vectors[j+1] & mask;
+            if ((testedBit1 ^ testedBit2) >> i == 1){
+                indexes.push_back(i);\
+                break;
+            }
         }
     }
+
+    int fixedCount = 32 - indexes.size();
+
+    //swap varying with fixed bits
+    for (uint32_t i = 0; i != x->m_Vectors.size(); i++ ) {
+         uint32_t swapper = x->m_Vectors[i];
+         for(uint32_t j = 0; j < indexes.size(); j++) {
+            swapper = swapBits(swapper,j, indexes[j]);
+         }
+
+         //zero out the fixed bits
+         swapper <<= fixedCount;
+         swapper >>= fixedCount;
+
+         shortVectors.push_back(swapper);
+    }
+
+    printVectors(shortVectors);
 }
 
 void CRig::Solve (ACVUTCoin x) {
