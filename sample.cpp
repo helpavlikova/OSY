@@ -110,13 +110,20 @@ class CRig
     static void printBinary(int i, int j, int diff, int mask);
     static unsigned int countSetBits(int n);
     static int binomialCoeff(int n, int k);
-    static int v;
-    static int f;
+    static int varCount;
+    static int fixCount;
+    static vector<uint32_t> shortVectors;
     static void prepareVectors(AFITCoin &x);
     static void printVectors(vector<int>& vectors);
     static void printVectors(vector<uint32_t>& vectors);
     static int swapBits(unsigned int n, unsigned int p1, unsigned int p2);
+    static uint64_t combinationSum(uint64_t k);
 };
+
+
+int CRig::varCount;
+int CRig::fixCount;
+vector<uint32_t> CRig::shortVectors;
 
 //via geeksforgeeks
 int CRig::binomialCoeff(int n, int k)
@@ -137,7 +144,7 @@ void CRig::bin(unsigned n)
         (n & i)? printf("1"): printf("0");
 }
 
-void CRig::printBinary(int i, int j, int diff, int mask){
+void CRig::printBinary(int i, int j, int diff, int mask) {
     bin(i);
     printf(" (%d) XOR\n",i);
     bin(j);
@@ -146,6 +153,16 @@ void CRig::printBinary(int i, int j, int diff, int mask){
     printf(" = %d\n", diff);
     printf("-----------------------\n");
 }
+
+uint64_t CRig::combinationSum(uint64_t k) {
+    uint64_t result = 0;
+
+    for (uint64_t i = 0; i < k; i++) {
+        result += binomialCoeff(fixCount, i);
+    }
+    return result;
+}
+
 
 //via geeksforgeeks
 unsigned int CRig::countSetBits(int n)
@@ -181,14 +198,14 @@ int CRig::swapBits(unsigned int n, unsigned int p1, unsigned int p2)
     return result;
 }
 
-void CRig::printVectors(vector<int>& vectors){
+void CRig::printVectors(vector<int>& vectors) {
     for (unsigned int i = 0; i < vectors.size(); i++) {
         printf(" %d ", vectors[i]);
     }
     printf("\n");
 }
 
-void CRig::printVectors(vector<uint32_t>& vectors){
+void CRig::printVectors(vector<uint32_t>& vectors) {
     for (unsigned int i = 0; i < vectors.size(); i++) {
         bin(vectors[i]);
         printf("\n");
@@ -196,14 +213,13 @@ void CRig::printVectors(vector<uint32_t>& vectors){
     printf("\n");
 }
 
-void CRig::prepareVectors(AFITCoin &x){
+void CRig::prepareVectors(AFITCoin &x) {
     vector<int> indexes;
-    vector<uint32_t> shortVectors;
     int mask;
     uint32_t testedBit1;
     uint32_t testedBit2;
 
-    //find out indexes of varyingbits
+    //find out indexes of varying bits
     for (uint32_t i = 0; i < 32; i++) { //through all bits
         mask = 1 << i;
         for(uint32_t j = 0; j != x->m_Vectors.size() - 1; j++) { //for each vector
@@ -216,7 +232,8 @@ void CRig::prepareVectors(AFITCoin &x){
         }
     }
 
-    int fixedCount = 32 - indexes.size();
+    varCount = indexes.size();
+    fixCount = 32 - varCount;
 
     //swap varying with fixed bits
     for (uint32_t i = 0; i != x->m_Vectors.size(); i++ ) {
@@ -226,8 +243,8 @@ void CRig::prepareVectors(AFITCoin &x){
          }
 
          //zero out the fixed bits
-         swapper <<= fixedCount;
-         swapper >>= fixedCount;
+         swapper <<= fixCount;
+         swapper >>= fixCount;
 
          shortVectors.push_back(swapper);
     }
@@ -240,23 +257,31 @@ void CRig::Solve (ACVUTCoin x) {
 }
 
 void CRig::Solve (AFITCoin x) {
+
     uint32_t mask;
     int diff, maxDiff;
 
     prepareVectors(x);
 
-    for (uint32_t i = 0; i < 16; i++){ //through all numbers 0-2^32
+    printf ("%f\n",pow(2, varCount));
+    for (uint32_t i = 0; i < pow(2, varCount); i++) { //through all numbers 0-2^32
         maxDiff = 0;
-        for(uint32_t j = 0; j != x->m_Vectors.size(); j++) { //through all vectors given
-            mask = i ^ x->m_Vectors[j]; // xor operation to find different bits between number i and vector j
+        for(uint32_t j = 0; j != shortVectors.size(); j++) { //through all vectors given
+            mask = i ^ shortVectors[j]; // xor operation to find different bits between number i and vector j
             diff = countSetBits(mask);
 
-            if(diff > maxDiff)
+            if(diff > maxDiff){
                 maxDiff = diff;
+            }
         }
 
-        if (maxDiff <= x->m_DistMax){
+        if (maxDiff == x->m_DistMax) {
             x->m_Count++;
+            printf("%u count++  is %zu\n",i, x->m_Count);
+        }
+        else if (maxDiff < x->m_DistMax) {
+            x->m_Count += combinationSum(x->m_DistMax - maxDiff);
+            printf("%u count + combinations is %zu\n",i, x->m_Count);
         }
     }
 }
