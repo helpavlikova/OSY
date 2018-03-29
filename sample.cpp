@@ -261,10 +261,10 @@ void CRig::Solve (AFITCoin x) {
     prepareVectors(x);
 
     if (varCount == 0) {
-        varCount = 32;
+        varCount = 32; //through all numbers 0-2^32
     }
 
-    for (uint32_t i = 0; i < pow(2, varCount); i++) { //through all numbers 0-2^32
+    for (uint32_t i = 0; i < pow(2, varCount); i++) { //through all number from 0 to 2^v
 
       //  printf("i: %u\n", i);
       //  bin(i);
