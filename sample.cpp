@@ -159,16 +159,12 @@ void CRig::printBinary(int i, int j, int diff, int mask) {
 uint64_t CRig::combinationSum(uint64_t k) {
     uint64_t result = 0;
     k = min(k, fixCount); //mensi z cisel k ci f
-    printf("k = %ld\n",k);
 
-    for (uint64_t i = 0; i <= k; i++) {
+    for (uint64_t i = 0; i <= k; i++) { //suma az do k vcetne
         result += binomialCoeff(fixCount, i); //f nad i
-        printf("i = %zu, fixcount = %zu, result = %ld\n",i, fixCount, result);
-
     }
     return result;
 }
-
 
 //via geeksforgeeks
 unsigned int CRig::countSetBits(int n)
@@ -254,12 +250,6 @@ void CRig::prepareVectors(AFITCoin &x) {
 
          shortVectors.push_back(swapper);
     }
-
-    printVectors(shortVectors);
-}
-
-void CRig::Solve (ACVUTCoin x) {
-
 }
 
 void CRig::Solve (AFITCoin x) {
@@ -269,7 +259,6 @@ void CRig::Solve (AFITCoin x) {
 
     prepareVectors(x);
 
-    printf ("%f\n",pow(2, varCount));
     for (uint32_t i = 0; i < pow(2, varCount); i++) { //through all numbers 0-2^32
         maxDiff = 0;
         for(uint32_t j = 0; j != shortVectors.size(); j++) { //through all vectors given
@@ -283,16 +272,16 @@ void CRig::Solve (AFITCoin x) {
 
         if (maxDiff == x->m_DistMax) {
             x->m_Count++;
-            printf("%u count++  is %zu\n",i, x->m_Count);
         }
         else if (maxDiff < x->m_DistMax) {
-             printf("%u: maxdiff = %d\n",i, maxDiff);
             x->m_Count += combinationSum(x->m_DistMax - maxDiff);
-            printf("%u: count + combinations is %zu\n",i, x->m_Count);
         }
     }
 }
 
+void CRig::Solve (ACVUTCoin x) {
+
+}
 
 CRig::CRig (void) {
 }
