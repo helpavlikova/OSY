@@ -124,7 +124,7 @@ class CRig
 
 int CRig::varCount;
 uint64_t CRig::fixCount;
-int CRig::bitsLen = 4;
+int CRig::bitsLen = 32;
 vector<uint32_t> CRig::shortVectors;
 
 //via geeksforgeeks
@@ -156,7 +156,7 @@ void CRig::printBinary(int i, int j, int diff, int mask) {
     printf("-----------------------\n");
 }
 
-uint64_t CRig::combinationSum(uint64_t k) {
+uint64_t CRig::combinationSum(uint64_t k) { //kombinatoricka magie z prednasky
     uint64_t result = 0;
     k = min(k, fixCount); //mensi z cisel k ci f
 
@@ -250,6 +250,7 @@ void CRig::prepareVectors(AFITCoin &x) {
 
          shortVectors.push_back(swapper);
     }
+   // printVectors(shortVectors);
 }
 
 void CRig::Solve (AFITCoin x) {
@@ -259,13 +260,26 @@ void CRig::Solve (AFITCoin x) {
 
     prepareVectors(x);
 
+    if (varCount == 0) {
+        varCount = 32;
+    }
+
     for (uint32_t i = 0; i < pow(2, varCount); i++) { //through all numbers 0-2^32
+
+      //  printf("i: %u\n", i);
+      //  bin(i);
+      //  printf("\n");
+      //  printVectors(shortVectors);
+      //  printf("____________________________________\n");
+
         maxDiff = 0;
+
         for(uint32_t j = 0; j != shortVectors.size(); j++) { //through all vectors given
+
             mask = i ^ shortVectors[j]; // xor operation to find different bits between number i and vector j
             diff = countSetBits(mask);
 
-            if(diff > maxDiff){
+            if(diff > maxDiff) { //hledani nejvetsiho rozdilu oproti vsem vektorum
                 maxDiff = diff;
             }
         }

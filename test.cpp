@@ -62,20 +62,20 @@ class CCustomerTest : public CCustomer
     void                     prepareTests                  ( void )
     {
          //m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x7, 0xa, 0xf }, 3 ), 13 );
-        m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x3, 0x5, 0x6 }, 3 ), 13 );
-        m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x3, 0x5, 0x6 }, 4 ), 16 );
-        m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x3, 0x5, 0x6 }, 2 ), 6 );
-        m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x3, 0x5, 0x6 }, 1 ), 1 );
-        m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x3, 0x5, 0x6 }, 0 ), 0 );
-       /* m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x6b8b4567 }, 0 ), 1 );
-      m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x327b23c6 }, 1 ), 33 );
-      m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x643c9869 }, 15 ), 1846943453 );
-      m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x66334873 }, 16 ), 2448023843 );
-      m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x74b0dc51 }, 17 ), 3013746563 );
-      m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x19495cff }, 31 ), 4294967295 );
-      m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x2ae8944a }, 32 ), 4294967296 );
+       // m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x3, 0x5, 0x6 }, 3 ), 13 );
+       // m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x3, 0x5, 0x6 }, 4 ), 16 );
+       // m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x3, 0x5, 0x6 }, 2 ), 6 );
+       // m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x3, 0x5, 0x6 }, 1 ), 1 );
+       // m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x3, 0x5, 0x6 }, 0 ), 0 );
+     // m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x6b8b4567 }, 0 ), 1 );
+      //m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x327b23c6 }, 1 ), 33 );
+     // m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x643c9869 }, 15 ), 1846943453 );
+     // m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x66334873 }, 16 ), 2448023843 );
+    //  m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x74b0dc51 }, 17 ), 3013746563 );
+    //  m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x19495cff }, 31 ), 4294967295 );
+    //  m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x2ae8944a }, 32 ), 4294967296 );
       m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x406518a4, 0x412f1ca1, 0x406d1ca5 }, 2 ), 0 );
-      m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x5cad9aeb, 0x7da99afb, 0x5d2992cb, 0x5d2992cb }, 4 ), 147 );
+      /*m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x5cad9aeb, 0x7da99afb, 0x5d2992cb, 0x5d2992cb }, 4 ), 147 );
       m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x396070f3, 0x3b6070f2, 0x796070a2, 0x796470b2, 0x3a6470f3 }, 9 ), 3294848 );
       m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x408543d7, 0x428543d6, 0x4a81c3d7, 0x48a1c3d6, 0x4aa143d7, 0x4a8dc3d7 }, 21 ), 3985193193 );
       m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0xe31d5fdc, 0xe1891fdc, 0xa19b7fde, 0xe3091ddc, 0xa39f6ddc, 0xe19b4fdc, 0xa11d5ddc }, 6 ), 337 );
