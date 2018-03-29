@@ -111,7 +111,8 @@ class CRig
     static unsigned int countSetBits(int n);
     static int binomialCoeff(int n, int k);
     static int varCount;
-    static int fixCount;
+    static uint64_t fixCount;
+    static int bitsLen;
     static vector<uint32_t> shortVectors;
     static void prepareVectors(AFITCoin &x);
     static void printVectors(vector<int>& vectors);
@@ -122,7 +123,8 @@ class CRig
 
 
 int CRig::varCount;
-int CRig::fixCount;
+uint64_t CRig::fixCount;
+int CRig::bitsLen = 4;
 vector<uint32_t> CRig::shortVectors;
 
 //via geeksforgeeks
@@ -156,9 +158,13 @@ void CRig::printBinary(int i, int j, int diff, int mask) {
 
 uint64_t CRig::combinationSum(uint64_t k) {
     uint64_t result = 0;
+    k = min(k, fixCount); //mensi z cisel k ci f
+    printf("k = %ld\n",k);
 
-    for (uint64_t i = 0; i < k; i++) {
-        result += binomialCoeff(fixCount, i);
+    for (uint64_t i = 0; i <= k; i++) {
+        result += binomialCoeff(fixCount, i); //f nad i
+        printf("i = %zu, fixcount = %zu, result = %ld\n",i, fixCount, result);
+
     }
     return result;
 }
@@ -220,7 +226,7 @@ void CRig::prepareVectors(AFITCoin &x) {
     uint32_t testedBit2;
 
     //find out indexes of varying bits
-    for (uint32_t i = 0; i < 32; i++) { //through all bits
+    for (int i = 0; i < bitsLen; i++) { //through all bits
         mask = 1 << i;
         for(uint32_t j = 0; j != x->m_Vectors.size() - 1; j++) { //for each vector
             testedBit1 = x->m_Vectors[j] & mask;
@@ -233,7 +239,7 @@ void CRig::prepareVectors(AFITCoin &x) {
     }
 
     varCount = indexes.size();
-    fixCount = 32 - varCount;
+    fixCount = bitsLen - varCount;
 
     //swap varying with fixed bits
     for (uint32_t i = 0; i != x->m_Vectors.size(); i++ ) {
@@ -280,8 +286,9 @@ void CRig::Solve (AFITCoin x) {
             printf("%u count++  is %zu\n",i, x->m_Count);
         }
         else if (maxDiff < x->m_DistMax) {
+             printf("%u: maxdiff = %d\n",i, maxDiff);
             x->m_Count += combinationSum(x->m_DistMax - maxDiff);
-            printf("%u count + combinations is %zu\n",i, x->m_Count);
+            printf("%u: count + combinations is %zu\n",i, x->m_Count);
         }
     }
 }
