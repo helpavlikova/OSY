@@ -224,11 +224,6 @@ void CRig::prepareVectors(AFITCoin &x) {
     uint32_t testedBit1;
     uint32_t testedBit2;
 
-    /*
-    printf("original vectors:\n");
-    printVectors(x->m_Vectors); */
-
-
     //find out indexes of varying bits
     for (int i = 0; i < bitsLen; i++) { //through all bits
         mask = 1 << i;
@@ -243,11 +238,6 @@ void CRig::prepareVectors(AFITCoin &x) {
     }
 
     varCount = indexes.size();
-
-    if (varCount == 0) {
-        varCount = 32; //through all numbers 0-2^32
-    }
-
     fixCount = bitsLen - varCount;
 
     //swap varying with fixed bits
@@ -265,27 +255,26 @@ void CRig::prepareVectors(AFITCoin &x) {
     }
 
     indexes.clear();
-
-   /* printf("short vectors:\n");
-    printVectors(shortVectors); */
 }
 
 void CRig::Solve (AFITCoin x) {
     uint32_t mask;
-    int diff, maxDiff;
+    int diff = 0;
+    int maxDiff;
 
     testCounter++;
     printf("test %d: \n", testCounter);
 
+
+
     prepareVectors(x);
 
-    for (uint32_t i = 0; i < pow(2, varCount); i++) { //through all number from 0 to 2^v
+    if (x->m_Vectors.size() == 1) {
+        x->m_Count = combinationSum(x->m_DistMax);
+        return;
+    }
 
-      //  printf("i: %u\n", i);
-      //  bin(i);
-      //  printf("\n");
-      //  printVectors(shortVectors);
-      //  printf("____________________________________\n");
+    for (uint32_t i = 0; i < pow(2, varCount); i++) { //through all number from 0 to 2^v
 
         maxDiff = 0;
 
@@ -294,7 +283,7 @@ void CRig::Solve (AFITCoin x) {
             mask = i ^ shortVectors[j]; // xor operation to find different bits between number i and vector j
             diff = countSetBits(mask);
 
-            if(diff > maxDiff) { //hledani nejvetsiho rozdilu oproti vsem vektorum
+            if(diff > maxDiff) {
                 maxDiff = diff;
             }
         }
