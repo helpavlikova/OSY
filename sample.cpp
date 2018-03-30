@@ -111,6 +111,7 @@ class CRig
     static unsigned int countSetBits(int n);
     static int binomialCoeff(int n, int k);
     static int varCount;
+    static int testCounter;
     static uint64_t fixCount;
     static int bitsLen;
     static vector<uint32_t> shortVectors;
@@ -124,6 +125,7 @@ class CRig
 
 int CRig::varCount;
 uint64_t CRig::fixCount;
+int CRig::testCounter = 0;
 int CRig::bitsLen = 32;
 vector<uint32_t> CRig::shortVectors;
 
@@ -163,6 +165,7 @@ uint64_t CRig::combinationSum(uint64_t k) { //kombinatoricka magie z prednasky
     for (uint64_t i = 0; i <= k; i++) { //suma az do k vcetne
         result += binomialCoeff(fixCount, i); //f nad i
     }
+   // printf("combinatorial magic: sum from 0 to %zu C(%zu, i) = %zu\n", k, fixCount, result);
     return result;
 }
 
@@ -221,6 +224,11 @@ void CRig::prepareVectors(AFITCoin &x) {
     uint32_t testedBit1;
     uint32_t testedBit2;
 
+    /*
+    printf("original vectors:\n");
+    printVectors(x->m_Vectors); */
+
+
     //find out indexes of varying bits
     for (int i = 0; i < bitsLen; i++) { //through all bits
         mask = 1 << i;
@@ -235,6 +243,11 @@ void CRig::prepareVectors(AFITCoin &x) {
     }
 
     varCount = indexes.size();
+
+    if (varCount == 0) {
+        varCount = 32; //through all numbers 0-2^32
+    }
+
     fixCount = bitsLen - varCount;
 
     //swap varying with fixed bits
@@ -250,19 +263,21 @@ void CRig::prepareVectors(AFITCoin &x) {
 
          shortVectors.push_back(swapper);
     }
-   // printVectors(shortVectors);
+
+    indexes.clear();
+
+   /* printf("short vectors:\n");
+    printVectors(shortVectors); */
 }
 
 void CRig::Solve (AFITCoin x) {
-
     uint32_t mask;
     int diff, maxDiff;
 
-    prepareVectors(x);
+    testCounter++;
+    printf("test %d: \n", testCounter);
 
-    if (varCount == 0) {
-        varCount = 32; //through all numbers 0-2^32
-    }
+    prepareVectors(x);
 
     for (uint32_t i = 0; i < pow(2, varCount); i++) { //through all number from 0 to 2^v
 
@@ -291,6 +306,9 @@ void CRig::Solve (AFITCoin x) {
             x->m_Count += combinationSum(x->m_DistMax - maxDiff);
         }
     }
+
+    shortVectors.clear();
+
 }
 
 void CRig::Solve (ACVUTCoin x) {
@@ -315,7 +333,6 @@ void CRig::Stop (void) {
 void CRig::AddCustomer (ACustomer c) {
 
 }
-
 
 
 
