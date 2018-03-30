@@ -164,9 +164,7 @@ uint64_t CRig::combinationSum(uint64_t k) { //kombinatoricka magie z prednasky
 
     for (uint64_t i = 0; i <= k; i++) { //suma az do k vcetne
         result += binomialCoeff(fixCount, i); //f nad i
-        printf("combinatorial magic: sum from 0 to %zu C(%zu, %zu) = %zu\n", k, fixCount, i, result);
     }
-    printf("combinatorial magic: sum from 0 to %zu C(%zu, i) = %zu\n", k, fixCount, result);
     return result;
 }
 
@@ -225,9 +223,6 @@ void CRig::prepareVectors(AFITCoin &x) {
     uint32_t testedBit1;
     uint32_t testedBit2;
 
-    printf("original vectors:\n");
-    printVectors(x->m_Vectors);
-
     //find out indexes of varying bits
     for (int i = 0; i < bitsLen; i++) { //through all bits
         mask = 1 << i;
@@ -242,9 +237,7 @@ void CRig::prepareVectors(AFITCoin &x) {
     }
 
     varCount = indexes.size();
-    printf("varCount: %d\n", varCount);
     fixCount = bitsLen - varCount;
-    printf("fixCount: %zu\n", fixCount);
 
     //swap varying with fixed bits
     for (uint32_t i = 0; i != x->m_Vectors.size(); i++ ) {
@@ -260,9 +253,6 @@ void CRig::prepareVectors(AFITCoin &x) {
          shortVectors.push_back(swapper);
     }
 
-
-    printf("shortened vectors:\n");
-    printVectors(shortVectors);
     indexes.clear();
 }
 
