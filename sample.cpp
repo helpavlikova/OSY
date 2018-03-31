@@ -109,7 +109,7 @@ class CRig
     static void bin(unsigned n);
     static void printBinary(int i, int j, int diff, int mask);
     static unsigned int countSetBits(int n);
-    static int binomialCoeff(int n, int k);
+    static uint64_t binomialCoeff(uint64_t n, uint64_t k);
     static int varCount;
     static int testCounter;
     static uint64_t fixCount;
@@ -130,14 +130,21 @@ int CRig::bitsLen = 32;
 vector<uint32_t> CRig::shortVectors;
 
 //via geeksforgeeks
-int CRig::binomialCoeff(int n, int k)
-{
-  // Base Cases
-  if (k==0 || k==n)
-    return 1;
+uint64_t CRig::binomialCoeff(uint64_t n, uint64_t k) {
+    uint64_t res = 1;
 
-  // Recur
-  return  binomialCoeff(n-1, k-1) + binomialCoeff(n-1, k);
+    // Since C(n, k) = C(n, n-k)
+    if ( k > n - k ) {
+        k = n - k;
+    }
+
+    // Calculate value of [n * (n-1) *---* (n-k+1)] / [k * (k-1) *----* 1]
+    for (uint64_t i = 0; i < k; ++i) {
+        res *= (n - i);
+        res /= (i + 1);
+    }
+
+    return res;
 }
 
 //via geeksforgeeks
