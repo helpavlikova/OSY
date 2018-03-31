@@ -110,24 +110,29 @@ class CRig
     static void printBinary(int i, int j, int diff, int mask);
     static unsigned int countSetBits(int n);
     static uint64_t binomialCoeff(uint64_t n, uint64_t k);
-    static int varCount;
-    static int testCounter;
-    static uint64_t fixCount;
-    static int bitsLen;
-    static vector<uint32_t> shortVectors;
     static void prepareVectors(AFITCoin &x);
     static void printVectors(vector<int>& vectors);
     static void printVectors(vector<uint32_t>& vectors);
     static int swapBits(unsigned int n, unsigned int p1, unsigned int p2);
     static uint64_t combinationSum(uint64_t k);
+    static void findVarBits(AFITCoin &x);
+    static void removeFixBits(AFITCoin &x);
+    static void compareWithNumbers(AFITCoin &x);
+    static int varCount;
+    static int testCounter;
+    static uint64_t fixCount;
+    static int bitsLen;
+    static vector<uint32_t> shortVectors;
+    static vector<int> indexes;
 };
 
-
+//declaration of static variables
 int CRig::varCount;
 uint64_t CRig::fixCount;
 int CRig::testCounter = 0;
 int CRig::bitsLen = 32;
 vector<uint32_t> CRig::shortVectors;
+vector<int> CRig::indexes;
 
 //via geeksforgeeks
 uint64_t CRig::binomialCoeff(uint64_t n, uint64_t k) {
@@ -188,8 +193,7 @@ unsigned int CRig::countSetBits(int n)
 }
 
 //via geeksforgeeks
-int CRig::swapBits(unsigned int n, unsigned int p1, unsigned int p2)
-{
+int CRig::swapBits(unsigned int n, unsigned int p1, unsigned int p2) {
     /* Move p1'th to rightmost side */
     unsigned int bit1 =  (n >> p1) & 1;
 
@@ -224,11 +228,9 @@ void CRig::printVectors(vector<uint32_t>& vectors) {
     printf("\n");
 }
 
-void CRig::prepareVectors(AFITCoin &x) {
-    vector<int> indexes;
+void CRig::findVarBits(AFITCoin &x) {
     int mask;
-    uint32_t testedBit1;
-    uint32_t testedBit2;
+    uint32_t testedBit1, testedBit2;
 
     //find out indexes of varying bits
     for (int i = 0; i < bitsLen; i++) { //through all bits
@@ -245,7 +247,9 @@ void CRig::prepareVectors(AFITCoin &x) {
 
     varCount = indexes.size();
     fixCount = bitsLen - varCount;
+}
 
+void CRig::removeFixBits(AFITCoin &x) {
     //swap varying with fixed bits
     for (uint32_t i = 0; i != x->m_Vectors.size(); i++ ) {
          uint32_t swapper = x->m_Vectors[i];
@@ -257,39 +261,27 @@ void CRig::prepareVectors(AFITCoin &x) {
          swapper <<= fixCount;
          swapper >>= fixCount;
 
-         shortVectors.push_back(swapper);
+         shortVectors.push_back(swapper); //adding the number without fixed bits to the new vector
     }
 
     indexes.clear();
 }
 
-void CRig::Solve (AFITCoin x) {
+void CRig::prepareVectors(AFITCoin &x) {
+    findVarBits(x);
+    removeFixBits(x);
+}
+
+void CRig::compareWithNumbers(AFITCoin &x) {
     uint32_t mask;
     int diff = 0;
     int maxDiff;
 
-    testCounter++;
-    printf("test %d: \n", testCounter);
-
-
-
-    prepareVectors(x);
-
-    if (x->m_Vectors.size() == 1) {
-        x->m_Count = combinationSum(x->m_DistMax);
-        shortVectors.clear();
-        return;
-    }
-
     for (uint32_t i = 0; i < pow(2, varCount); i++) { //through all number from 0 to 2^v
-
         maxDiff = 0;
-
         for(uint32_t j = 0; j != shortVectors.size(); j++) { //through all vectors given
-
             mask = i ^ shortVectors[j]; // xor operation to find different bits between number i and vector j
             diff = countSetBits(mask);
-
             if(diff > maxDiff) {
                 maxDiff = diff;
             }
@@ -304,6 +296,20 @@ void CRig::Solve (AFITCoin x) {
     }
 
     shortVectors.clear();
+}
+
+void CRig::Solve (AFITCoin x) {
+    testCounter++;
+    printf("test %d: \n", testCounter);
+
+    prepareVectors(x);
+
+    if (x->m_Vectors.size() > 1) {
+        compareWithNumbers(x);
+    } else {
+        x->m_Count = combinationSum(x->m_DistMax); //for a single number given, we just compute the result
+        shortVectors.clear();
+    }
 
 }
 
