@@ -392,23 +392,30 @@ void CRig::prepareData(ACVUTCoin &x) { // move all the bits into a single array 
             currentNum >>= 1;
         }
      }
-     printVectors(boolVector);
+
+     //printVectors(boolVector);
 }
 
 void CRig::findPrefixSuffix(ACVUTCoin &x) {
     int dist;
 
-    for (uint64_t i = 0; i <= boolVector.size(); i++) { //find all prefixes
+    for (uint64_t i = 1; i <= boolVector.size(); i++) { //find all prefixes, i must not be 0
         vector<bool> prefix(boolVector.begin(), boolVector.begin() + i);
-
-        for (uint64_t j = 0; j <= boolVector.size(); j++) { //find all suffixes
+        for (uint64_t j = 0; j < boolVector.size(); j++) { //find all suffixes, j must not be max
             vector<bool> suffix(boolVector.begin()+ j, boolVector.end());
 
             dist = editDistance(prefix, suffix);
-
             if(dist >= x->m_DistMin && dist <= x->m_DistMax) {
+               /* printf("i = %zu\nj = %zu\n",i,j);
+                printf ("A: ");
+                printVectors(prefix);
+                printf ("B: ");
+                printVectors(suffix);
+                printf ("dist = %d\n", dist);
+                printf ("______________________________________\n"); */
                 x->m_Count++;
             }
+
         }
 
     }
@@ -418,8 +425,12 @@ void CRig::findPrefixSuffix(ACVUTCoin &x) {
 
 void CRig::Solve (ACVUTCoin x) {
 
+    testCounter++;
+    printf("test %d: \n", testCounter);
+
     prepareData(x);
     findPrefixSuffix(x);
+    boolVector.clear();
 
 }
 
