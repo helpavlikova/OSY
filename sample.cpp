@@ -106,13 +106,16 @@ class CRig
     void Stop (void);
     void AddCustomer (ACustomer c);
   private:
-    static void bin(unsigned n);
+    static void bin(unsigned n, int bitsLen);
     static void printBinary(int i, int j, int diff, int mask);
     static unsigned int countSetBits(int n);
     static uint64_t binomialCoeff(uint64_t n, uint64_t k);
     static void prepareVectors(AFITCoin &x);
+    static void prepareData(ACVUTCoin &x);
     static void printVectors(vector<int>& vectors);
+    static void printVectors(vector<bool>& vectors);
     static void printVectors(vector<uint32_t>& vectors);
+    static void printVectors(vector<uint8_t>& vectors);
     static int swapBits(unsigned int n, unsigned int p1, unsigned int p2);
     static uint64_t combinationSum(uint64_t k);
     static void findVarBits(AFITCoin &x);
@@ -124,6 +127,7 @@ class CRig
     static int bitsLen;
     static vector<uint32_t> shortVectors;
     static vector<int> indexes;
+    static vector<bool> boolVector;
 };
 
 //declaration of static variables
@@ -133,6 +137,58 @@ int CRig::testCounter = 0;
 int CRig::bitsLen = 32;
 vector<uint32_t> CRig::shortVectors;
 vector<int> CRig::indexes;
+vector<bool> CRig::boolVector;
+
+
+//--------------------------------------- printing methods -----------------------------------------------
+
+//via geeksforgeeks
+void CRig::bin(unsigned n, int len) {
+    unsigned i;
+    for (i = 1 << (len - 1); i > 0; i = i / 2)
+        (n & i)? printf("1"): printf("0");
+}
+
+void CRig::printBinary(int i, int j, int diff, int mask) {
+    bin(i, bitsLen);
+    printf(" (%d) XOR\n",i);
+    bin(j, bitsLen);
+    printf(" is:\n");
+    bin(mask, bitsLen);
+    printf(" = %d\n", diff);
+    printf("-----------------------\n");
+}
+
+void CRig::printVectors(vector<int>& vectors) {
+    for (unsigned int i = 0; i < vectors.size(); i++) {
+        printf(" %d ", vectors[i]);
+    }
+    printf("\n");
+}
+
+void CRig::printVectors(vector<uint32_t>& vectors) {
+    for (unsigned int i = 0; i < vectors.size(); i++) {
+        bin(vectors[i], bitsLen);
+        printf("\n");
+    }
+    printf("\n");
+}
+
+void CRig::printVectors(vector<uint8_t>& vectors) {
+    for (unsigned int i = 0; i < vectors.size(); i++) {
+        bin(vectors[i], 8);
+        printf("\n");
+    }
+    printf("\n");
+}
+
+void CRig::printVectors(vector<bool>& vectors) {
+    for (unsigned int i = 0; i < vectors.size(); i++) {
+        printf("%d",  static_cast<int>(vectors[i]));
+    }
+    printf("\n");
+}
+//--------------------------------------- FITCoin methods -----------------------------------------------
 
 //via geeksforgeeks
 uint64_t CRig::binomialCoeff(uint64_t n, uint64_t k) {
@@ -152,24 +208,6 @@ uint64_t CRig::binomialCoeff(uint64_t n, uint64_t k) {
     return res;
 }
 
-//via geeksforgeeks
-void CRig::bin(unsigned n)
-{
-    unsigned i;
-    for (i = 1 << 31; i > 0; i = i / 2)
-        (n & i)? printf("1"): printf("0");
-}
-
-void CRig::printBinary(int i, int j, int diff, int mask) {
-    bin(i);
-    printf(" (%d) XOR\n",i);
-    bin(j);
-    printf(" is:\n");
-    bin(mask);
-    printf(" = %d\n", diff);
-    printf("-----------------------\n");
-}
-
 uint64_t CRig::combinationSum(uint64_t k) { //kombinatoricka magie z prednasky
     uint64_t result = 0;
     k = min(k, fixCount); //mensi z cisel k ci f
@@ -181,11 +219,9 @@ uint64_t CRig::combinationSum(uint64_t k) { //kombinatoricka magie z prednasky
 }
 
 //via geeksforgeeks
-unsigned int CRig::countSetBits(int n)
-{
+unsigned int CRig::countSetBits(int n) {
     unsigned int count = 0;
-    while (n)
-    {
+    while (n) {
       n &= (n-1) ;
       count++;
     }
@@ -211,21 +247,6 @@ int CRig::swapBits(unsigned int n, unsigned int p1, unsigned int p2) {
     unsigned int result = n ^ x;
 
     return result;
-}
-
-void CRig::printVectors(vector<int>& vectors) {
-    for (unsigned int i = 0; i < vectors.size(); i++) {
-        printf(" %d ", vectors[i]);
-    }
-    printf("\n");
-}
-
-void CRig::printVectors(vector<uint32_t>& vectors) {
-    for (unsigned int i = 0; i < vectors.size(); i++) {
-        bin(vectors[i]);
-        printf("\n");
-    }
-    printf("\n");
 }
 
 void CRig::findVarBits(AFITCoin &x) {
@@ -313,8 +334,25 @@ void CRig::Solve (AFITCoin x) {
 
 }
 
-void CRig::Solve (ACVUTCoin x) {
+//--------------------------------------- CVUTCoin methods -----------------------------------------------
 
+void CRig::prepareData(ACVUTCoin &x) {
+    bool newBit;
+    uint8_t currentNum;
+
+     for (uint8_t i = 0; i != x->m_Data.size(); i++) {
+        currentNum = x->m_Data[i];
+        for (int j = 0; j < 8; j++) {
+            newBit = currentNum & 1;
+            boolVector.push_back(newBit);
+            currentNum >>= 1;
+        }
+     }
+     printVectors(boolVector);
+}
+
+void CRig::Solve (ACVUTCoin x) {
+    prepareData(x);
 }
 
 CRig::CRig (void) {
