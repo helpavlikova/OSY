@@ -117,6 +117,7 @@ class CRig
     static void printVectors(vector<bool>& vectors);
     static void printVectors(vector<uint32_t>& vectors);
     static void printVectors(vector<uint8_t>& vectors);
+    static int editDistance(vector<bool>&  word1, vector<bool>& word2);
     static int swapBits(unsigned int n, unsigned int p1, unsigned int p2);
     static uint64_t combinationSum(uint64_t k);
     static void findVarBits(AFITCoin &x);
@@ -336,14 +337,56 @@ void CRig::Solve (AFITCoin x) {
 }
 
 //--------------------------------------- CVUTCoin methods -----------------------------------------------
+int min(int x, int y, int z)
+{
+    return min(min(x, y), z);
+}
 
-void CRig::prepareData(ACVUTCoin &x) {
+//via geeksforgeeks
+int CRig::editDistance(vector<bool>& str1, vector<bool>& str2) {
+
+    int m,n;
+    m = str1.size();
+    n = str2.size();
+
+    // Create a table to store results of subproblems
+    vector< vector<int> > dp(m + 1, vector<int>(n + 1)); //a vector version of int dp[m+1][n+1];
+
+    // Fill d[][] in bottom up manner
+    for (int i=0; i<=m; i++)
+    {
+        for (int j=0; j<=n; j++)
+        {
+            // If first string is empty, only option is to insert all characters of second string
+            if (i==0)
+                dp[i][j] = j;  // Min. operations = j
+
+            // If second string is empty, only option is to remove all characters of second string
+            else if (j==0)
+                dp[i][j] = i; // Min. operations = i
+
+            // If last characters are same, ignore last char and recur for remaining string
+            else if (str1[i-1] == str2[j-1])
+                dp[i][j] = dp[i-1][j-1];
+
+            // If last character are different, consider all possibilities and find minimum
+            else
+                dp[i][j] = 1 + min(dp[i][j-1],  // Insert
+                                   dp[i-1][j],  // Remove
+                                   dp[i-1][j-1]); // Replace
+        }
+    }
+
+    return dp[m][n];
+}
+
+void CRig::prepareData(ACVUTCoin &x) { // move all the bits into a single array of bools
     bool newBit;
     uint8_t currentNum;
 
-     for (uint32_t i = 0; i != x->m_Data.size(); i++) {
+     for (uint64_t i = 0; i != x->m_Data.size(); i++) { //for each byte in input data
         currentNum = x->m_Data[i];
-        for (int j = 0; j < 8; j++) {
+        for (int j = 0; j < 8; j++) { //for each bit in byte given, put it in the vector
             newBit = currentNum & 1;
             boolVector.push_back(newBit);
             currentNum >>= 1;
@@ -353,13 +396,19 @@ void CRig::prepareData(ACVUTCoin &x) {
 }
 
 void CRig::findPrefixSuffix(ACVUTCoin &x) {
+    int dist;
 
-    for (uint32_t i = 0; i <= boolVector.size(); i++) {
+    for (uint64_t i = 0; i <= boolVector.size(); i++) { //find all prefixes
         vector<bool> prefix(boolVector.begin(), boolVector.begin() + i);
-       // printVectors(prefix);
-        for (uint32_t j = 0; j <= boolVector.size(); j++) {
+
+        for (uint64_t j = 0; j <= boolVector.size(); j++) { //find all suffixes
             vector<bool> suffix(boolVector.begin()+ j, boolVector.end());
-            printVectors(suffix);
+
+            dist = editDistance(prefix, suffix);
+
+            if(dist >= x->m_DistMin && dist <= x->m_DistMax) {
+                x->m_Count++;
+            }
         }
 
     }
