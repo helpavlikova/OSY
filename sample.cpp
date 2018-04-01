@@ -112,6 +112,7 @@ class CRig
     static uint64_t binomialCoeff(uint64_t n, uint64_t k);
     static void prepareVectors(AFITCoin &x);
     static void prepareData(ACVUTCoin &x);
+    static void findPrefixSuffix(ACVUTCoin &x);
     static void printVectors(vector<int>& vectors);
     static void printVectors(vector<bool>& vectors);
     static void printVectors(vector<uint32_t>& vectors);
@@ -340,7 +341,7 @@ void CRig::prepareData(ACVUTCoin &x) {
     bool newBit;
     uint8_t currentNum;
 
-     for (uint8_t i = 0; i != x->m_Data.size(); i++) {
+     for (uint32_t i = 0; i != x->m_Data.size(); i++) {
         currentNum = x->m_Data[i];
         for (int j = 0; j < 8; j++) {
             newBit = currentNum & 1;
@@ -351,8 +352,26 @@ void CRig::prepareData(ACVUTCoin &x) {
      printVectors(boolVector);
 }
 
+void CRig::findPrefixSuffix(ACVUTCoin &x) {
+
+    for (uint32_t i = 0; i <= boolVector.size(); i++) {
+        vector<bool> prefix(boolVector.begin(), boolVector.begin() + i);
+       // printVectors(prefix);
+        for (uint32_t j = 0; j <= boolVector.size(); j++) {
+            vector<bool> suffix(boolVector.begin()+ j, boolVector.end());
+            printVectors(suffix);
+        }
+
+    }
+
+
+}
+
 void CRig::Solve (ACVUTCoin x) {
+
     prepareData(x);
+    findPrefixSuffix(x);
+
 }
 
 CRig::CRig (void) {
