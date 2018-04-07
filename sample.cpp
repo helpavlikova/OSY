@@ -97,10 +97,12 @@ class CCustomer
 
 class CCoin {
 public:
-    CCoin(bool coinType, AFITCoin *fitCoinRef, ACVUTCoin *cvutCoinRef): isFit(coinType), fitCoin(*fitCoinRef), cvutCoin(*cvutCoinRef) { }
+    CCoin(bool coinType, AFITCoin fitCoinRef, ACVUTCoin cvutCoinRef, int ID):
+        isFit(coinType), fitCoin(fitCoinRef), cvutCoin(cvutCoinRef), coinID(ID) { }
     bool isFit; // if 1, then FitCoin, if 0 then CvutCoin
-    AFITCoin & fitCoin;
-    ACVUTCoin & cvutCoin;
+    AFITCoin fitCoin;
+    ACVUTCoin cvutCoin;
+    int coinID;
     void printCoin();
 private:
 
@@ -109,9 +111,9 @@ private:
 
 void CCoin::printCoin() {
     if (isFit) {
-        printf("FITCoin: distMax: %d\n",fitCoin->m_DistMax);
+        printf("FITCoin: distMax: %d\n", fitCoin->m_DistMax);
     } else {
-        printf ("CVUTCoin: <distMin, distMax>: <%d,%d>/n",cvutCoin->m_DistMin, cvutCoin->m_DistMax);
+        printf ("CVUTCoin: <distMin, distMax>: <%d,%d>\n",cvutCoin->m_DistMin, cvutCoin->m_DistMax);
     }
 }
 
@@ -152,7 +154,7 @@ class CRig
     static vector<uint32_t> shortVectors;
     static vector<int> indexes;
     static vector<bool> boolVector;
-    deque<reference_wrapper<CCoin> > coinBuffer;
+    deque<CCoin> coinBuffer;
     void AddFitCoin(ACustomer &c);
     void AddCvutCoin(ACustomer &c);
 };
@@ -473,9 +475,9 @@ void CRig::AddFitCoin(ACustomer &c) {
     int i = 1;
 
     for ( AFITCoin x = c -> FITCoinGen (); x ; x = c -> FITCoinGen () ) {
-        CCoin newFitCoin(true, &x, nullptr);
+        CCoin newFitCoin(true, x, nullptr, i+100);
         coinBuffer.push_back(newFitCoin);
-        printf("adding FitCoin %d\n",i);
+        //printf("adding FitCoin %d\n",i);
         i++;
     }
 }
@@ -485,9 +487,9 @@ void CRig::AddCvutCoin(ACustomer &c) {
     int i = 1;
 
     for ( ACVUTCoin x = c -> CVUTCoinGen (); x ; x = c -> CVUTCoinGen () ) {
-        CCoin newCvutCoin(false, nullptr, &x);
+        CCoin newCvutCoin(false, nullptr, x, i+200);
         coinBuffer.push_back(newCvutCoin);
-        printf("adding CvutCoin %d\n",i);
+        //printf("adding CvutCoin %d\n",i);
         i++;
     }
 }
@@ -501,9 +503,12 @@ void CRig::AddCustomer (ACustomer c) {
     fitThread.join();                // pauses until thread finishes
     cvutThread.join();               // pauses until thread finishes
 
-   /* for(unsigned i = 0; i < coinBuffer.size(); i++){
-        coinBuffer[i]. get () . printCoin(); //segfault
-    } */
+    int i = 0;
+    for ( auto it = this->coinBuffer . begin (); it != this->coinBuffer . end (); it++ ) {
+        printf ("[%d] %d ",i, it -> coinID );
+        it -> printCoin();
+        i++;
+    }
 
 }
 
