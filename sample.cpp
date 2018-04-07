@@ -158,6 +158,7 @@ class CRig
     deque<CCoin> coinBuffer;
     void AddFitCoin(ACustomer &c);
     void AddCvutCoin(ACustomer &c);
+    void SolveCoin();
 };
 
 //declaration of static variables
@@ -480,7 +481,6 @@ void CRig::AddFitCoin(ACustomer &c) {
         mtx.lock();
         coinBuffer.push_back(newFitCoin);
         mtx.unlock();
-        printf("adding FitCoin %d\n",i);
         i++;
     }
 }
@@ -492,9 +492,8 @@ void CRig::AddCvutCoin(ACustomer &c) {
     for ( ACVUTCoin x = c -> CVUTCoinGen (); x ; x = c -> CVUTCoinGen () ) {
         CCoin newCvutCoin(false, nullptr, x, i+200);
         mtx.lock();
-        coinBuffer.push_back(newCvutCoin);
+            coinBuffer.push_back(newCvutCoin);
         mtx.unlock();
-        printf("adding CvutCoin %d\n",i);
         i++;
     }
 }
@@ -510,12 +509,36 @@ void CRig::AddCustomer (ACustomer c) {
 
     int i = 0;
     for ( auto it = this->coinBuffer . begin (); it != this->coinBuffer . end (); it++ ) {
-        printf ("[%d] %d ",i, it -> coinID );
+       // printf ("[%d] %d ",i, it -> coinID );
         it -> printCoin();
         i++;
     }
+   // SolveCoin();
 
 }
+
+void CRig::SolveCoin() {
+
+    while(coinBuffer . size () > 0) {
+        //vybrat
+        mtx.lock();
+            CCoin coin = coinBuffer.front();
+            coinBuffer.pop_front();
+        mtx.unlock();
+
+        //solve
+        if(coin.isFit) {
+            Solve(coin.fitCoin);
+            printf("result: %zu\n", coin.fitCoin->m_Count);
+        }
+        else {
+            Solve(coin.cvutCoin);
+            printf("result: %zu\n", coin.cvutCoin->m_Count);
+        }
+    }
+
+}
+
 
 void CRig::Start (int thrCnt) {
 
