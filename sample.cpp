@@ -94,6 +94,7 @@ class CCustomer
 //=================================================================================================
 #endif /* __PROGTEST__ */
 
+mutex mtx;
 
 class CCoin {
 public:
@@ -476,8 +477,10 @@ void CRig::AddFitCoin(ACustomer &c) {
 
     for ( AFITCoin x = c -> FITCoinGen (); x ; x = c -> FITCoinGen () ) {
         CCoin newFitCoin(true, x, nullptr, i+100);
+        mtx.lock();
         coinBuffer.push_back(newFitCoin);
-        //printf("adding FitCoin %d\n",i);
+        mtx.unlock();
+        printf("adding FitCoin %d\n",i);
         i++;
     }
 }
@@ -488,8 +491,10 @@ void CRig::AddCvutCoin(ACustomer &c) {
 
     for ( ACVUTCoin x = c -> CVUTCoinGen (); x ; x = c -> CVUTCoinGen () ) {
         CCoin newCvutCoin(false, nullptr, x, i+200);
+        mtx.lock();
         coinBuffer.push_back(newCvutCoin);
-        //printf("adding CvutCoin %d\n",i);
+        mtx.unlock();
+        printf("adding CvutCoin %d\n",i);
         i++;
     }
 }
