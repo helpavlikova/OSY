@@ -97,6 +97,7 @@ class CCustomer
 
 class CCoin {
 public:
+    CCoin(bool coinType);
     bool isFit; // if 1, then FitCoin, if 0 then CvutCoin
     CFITCoin & FitCoin;
     CCVUTCoin & CvutCoin;
@@ -468,6 +469,12 @@ void CRig::AddCvutCoin(ACustomer &c) {
 
 void CRig::AddCustomer (ACustomer c) {
 
+    thread fitThread (&CRig::AddFitCoin, this, ref(c));
+    thread cvutThread (&CRig::AddCvutCoin, this, ref(c));
+
+    // synchronize threads:
+    fitThread.join();                // pauses until first finishes
+    cvutThread.join();               // pauses until second finishes
 }
 
 void CRig::Start (int thrCnt) {
