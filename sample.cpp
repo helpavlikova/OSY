@@ -97,14 +97,13 @@ class CCustomer
 
 class CCoin {
 public:
-    CCoin(bool coinType);
+    CCoin(bool coinType, AFITCoin &fitCoinRef, ACVUTCoin &cvutCoinRef): isFit(coinType), FitCoin(fitCoinRef), CvutCoin(cvutCoinRef) { }
     bool isFit; // if 1, then FitCoin, if 0 then CvutCoin
-    CFITCoin & FitCoin;
-    CCVUTCoin & CvutCoin;
+    AFITCoin & FitCoin;
+    ACVUTCoin & CvutCoin;
 private:
 
 };
-
 
 class CRig
 {
@@ -461,6 +460,9 @@ CRig::CRig (void) {
 
 void CRig::AddFitCoin(ACustomer &c) {
 
+    for ( AFITCoin x = c -> FITCoinGen (); x ; x = c -> FITCoinGen () ) {
+        //do sth
+    }
 }
 
 void CRig::AddCvutCoin(ACustomer &c) {

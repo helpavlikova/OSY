@@ -54,8 +54,8 @@ class CCustomerTest : public CCustomer
     }
     //---------------------------------------------------------------------------------------------
   private:
-    vector<pair<AFITCoin, uint64_t> >  m_TestsFIT; //par fitCoin, vysledek
-    vector<pair<ACVUTCoin, uint64_t> > m_TestsCVUT; // par cvutCoin, vysledek
+    vector<pair<AFITCoin, uint64_t> >  m_TestsFIT; //par (fitCoin, vysledek)
+    vector<pair<ACVUTCoin, uint64_t> > m_TestsCVUT; // par (cvutCoin, vysledek)
     size_t                   m_FITIdx;
     size_t                   m_CVUTIdx;
     //---------------------------------------------------------------------------------------------
