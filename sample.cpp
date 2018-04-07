@@ -95,16 +95,26 @@ class CCustomer
 #endif /* __PROGTEST__ */
 
 
+class CCoin {
+public:
+    bool isFit; // if 1, then FitCoin, if 0 then CvutCoin
+    CFITCoin & FitCoin;
+    CCVUTCoin & CvutCoin;
+private:
+
+};
+
+
 class CRig
 {
   public:
     static void Solve (ACVUTCoin x);
     static void Solve (AFITCoin x);
-    CRig (void) {}
+    CRig (void);
     ~CRig (void) {}
-    void Start (int thrCnt) {}
-    void Stop (void) {}
-    void AddCustomer (ACustomer c) {}
+    void Start (int thrCnt);
+    void Stop (void);
+    void AddCustomer (ACustomer c);
   private:
     static void bin(unsigned n, int bitsLen);
     static void printBinary(int i, int j, int diff, int mask);
@@ -132,6 +142,9 @@ class CRig
     static vector<uint32_t> shortVectors;
     static vector<int> indexes;
     static vector<bool> boolVector;
+    deque<reference_wrapper<CCoin> > coinBuffer;
+    void AddFitCoin(ACustomer &c);
+    void AddCvutCoin(ACustomer &c);
 };
 
 //declaration of static variables
@@ -144,7 +157,7 @@ vector<int> CRig::indexes;
 vector<bool> CRig::boolVector;
 
 
-//--------------------------------------- printing methods -----------------------------------------------
+//--------------------------------------- Printing methods -----------------------------------------------
 
 uint64_t CRig::min(uint64_t x, uint64_t y) {
     if (x < y)
@@ -199,6 +212,7 @@ void CRig::printVectors(vector<bool>& vectors) {
     }
     printf("\n");
 }
+
 //--------------------------------------- FITCoin methods -----------------------------------------------
 
 //via geeksforgeeks
@@ -346,6 +360,7 @@ void CRig::Solve (AFITCoin x) {
 }
 
 //--------------------------------------- CVUTCoin methods -----------------------------------------------
+
 int CRig::min(int x, int y, int z) {
     return min(min(x, y), z);
 }
@@ -435,6 +450,36 @@ void CRig::Solve (ACVUTCoin x) {
 
 }
 
+CRig::CRig (void) {
+    testCounter = 0;
+    bitsLen = 32;
+}
+
+//--------------------------------------- Parallel solution metods ----------------------------------------
+
+
+void CRig::AddFitCoin(ACustomer &c) {
+
+}
+
+void CRig::AddCvutCoin(ACustomer &c) {
+
+}
+
+void CRig::AddCustomer (ACustomer c) {
+
+}
+
+void CRig::Start (int thrCnt) {
+
+}
+
+void CRig::Stop (void) {
+
+}
+
+
+
 #ifndef __PROGTEST__
-#include "test.inc"
+#include "test.cpp"
 #endif /* __PROGTEST__ */
