@@ -61,12 +61,12 @@ class CCustomerTest : public CCustomer
     //---------------------------------------------------------------------------------------------
     void                     prepareTests                  ( void )
     {
-         m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x7, 0xa, 0xf }, 3 ), 13 );
-        m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x3, 0x5, 0x6 }, 3 ), 13 );
-        m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x3, 0x5, 0x6 }, 4 ), 16 );
-      m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x3, 0x5, 0x6 }, 2 ), 6 );
-      m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x3, 0x5, 0x6 }, 1 ), 1 );
-      m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x3, 0x5, 0x6 }, 0 ), 0 );
+     //    m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x7, 0xa, 0xf }, 3 ), 13 );
+     //   m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x3, 0x5, 0x6 }, 3 ), 13 );
+     //   m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x3, 0x5, 0x6 }, 4 ), 16 );
+    //  m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x3, 0x5, 0x6 }, 2 ), 6 );
+   //   m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x3, 0x5, 0x6 }, 1 ), 1 );
+   //   m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x3, 0x5, 0x6 }, 0 ), 0 );
   /* 1 */  m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x6b8b4567 }, 0 ), 1 );
   /* 2 */    m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x327b23c6 }, 1 ), 33 );
   /* 3 */    m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x643c9869 }, 15 ), 1846943453 );

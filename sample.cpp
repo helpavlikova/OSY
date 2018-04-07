@@ -97,13 +97,23 @@ class CCustomer
 
 class CCoin {
 public:
-    CCoin(bool coinType, AFITCoin &fitCoinRef, ACVUTCoin &cvutCoinRef): isFit(coinType), FitCoin(fitCoinRef), CvutCoin(cvutCoinRef) { }
+    CCoin(bool coinType, AFITCoin *fitCoinRef, ACVUTCoin *cvutCoinRef): isFit(coinType), fitCoin(*fitCoinRef), cvutCoin(*cvutCoinRef) { }
     bool isFit; // if 1, then FitCoin, if 0 then CvutCoin
-    AFITCoin & FitCoin;
-    ACVUTCoin & CvutCoin;
+    AFITCoin & fitCoin;
+    ACVUTCoin & cvutCoin;
+    void printCoin();
 private:
 
 };
+
+
+void CCoin::printCoin() {
+    if (isFit) {
+        printf("FITCoin: distMax: %d\n",fitCoin->m_DistMax);
+    } else {
+        printf ("CVUTCoin: <distMin, distMax>: <%d,%d>/n",cvutCoin->m_DistMin, cvutCoin->m_DistMax);
+    }
+}
 
 class CRig
 {
@@ -460,13 +470,26 @@ CRig::CRig (void) {
 
 void CRig::AddFitCoin(ACustomer &c) {
 
+    int i = 1;
+
     for ( AFITCoin x = c -> FITCoinGen (); x ; x = c -> FITCoinGen () ) {
-        //do sth
+        CCoin newFitCoin(true, &x, nullptr);
+        coinBuffer.push_back(newFitCoin);
+        printf("adding FitCoin %d\n",i);
+        i++;
     }
 }
 
 void CRig::AddCvutCoin(ACustomer &c) {
 
+    int i = 1;
+
+    for ( ACVUTCoin x = c -> CVUTCoinGen (); x ; x = c -> CVUTCoinGen () ) {
+        CCoin newCvutCoin(false, nullptr, &x);
+        coinBuffer.push_back(newCvutCoin);
+        printf("adding CvutCoin %d\n",i);
+        i++;
+    }
 }
 
 void CRig::AddCustomer (ACustomer c) {
@@ -475,8 +498,13 @@ void CRig::AddCustomer (ACustomer c) {
     thread cvutThread (&CRig::AddCvutCoin, this, ref(c));
 
     // synchronize threads:
-    fitThread.join();                // pauses until first finishes
-    cvutThread.join();               // pauses until second finishes
+    fitThread.join();                // pauses until thread finishes
+    cvutThread.join();               // pauses until thread finishes
+
+   /* for(unsigned i = 0; i < coinBuffer.size(); i++){
+        coinBuffer[i]. get () . printCoin(); //segfault
+    } */
+
 }
 
 void CRig::Start (int thrCnt) {
