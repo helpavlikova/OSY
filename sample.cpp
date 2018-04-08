@@ -130,49 +130,37 @@ class CRig
     void AddCustomer (ACustomer c);
   private:
     static void bin(unsigned n, int bitsLen);
-    static void printBinary(int i, int j, int diff, int mask);
-    static unsigned int countSetBits(int n);
-    static uint64_t binomialCoeff(uint64_t n, uint64_t k);
-    static void prepareVectors(AFITCoin &x);
-    static void prepareData(ACVUTCoin &x);
-    static void findPrefixSuffix(ACVUTCoin &x);
+    static void printBinary(int i, int j, int diff, int mask);    
     static void printVectors(vector<int>& vectors);
     static void printVectors(vector<bool>& vectors);
     static void printVectors(vector<uint32_t>& vectors);
     static void printVectors(vector<uint8_t>& vectors);
+    static unsigned int countSetBits(int n);
+    static uint64_t binomialCoeff(uint64_t n, uint64_t k);
+    static void prepareData(ACVUTCoin &x, vector<bool> & boolVector);
+    static void findPrefixSuffix(ACVUTCoin &x, vector<bool> & boolVector);
     static int editDistance(vector<bool>&  word1, vector<bool>& word2);
     static int swapBits(unsigned int n, unsigned int p1, unsigned int p2);
-    static uint64_t combinationSum(uint64_t k);
-    static void findVarBits(AFITCoin &x);
-    static void removeFixBits(AFITCoin &x);
-    static void compareWithNumbers(AFITCoin &x);
+    static uint64_t combinationSum(uint64_t k, uint64_t fixCount);
+    static void findVarBits(AFITCoin &x, uint64_t &fixCount, int& varCount,vector<int>& indexes);
+    static void removeFixBits(AFITCoin &x, uint64_t &fixCount,vector<int>& indexes, vector<uint32_t>& shortVectors);
+    static void compareWithNumbers(AFITCoin &x,int& varCount,uint64_t &fixCount, vector<uint32_t>& shortVectors);
     static int min(int x, int y, int z);
     static uint64_t min(uint64_t x, uint64_t y);
-    static int varCount;
-    static int FITtestCounter;
-    static int CVUTtestCounter;
-    static uint64_t fixCount;
-    static int bitsLen;
-    static vector<uint32_t> shortVectors;
-    static vector<int> indexes;
-    static vector<bool> boolVector;
-    deque<CCoin> coinBuffer;
     void AddFitCoin(ACustomer &c);
     void AddCvutCoin(ACustomer &c);
     void SolveCoin();
+    static int FITtestCounter;
+    static int CVUTtestCounter;
+    static int bitsLen;
+    deque<CCoin> coinBuffer;
     vector<thread> threads;
 };
 
 //declaration of static variables
-int CRig::varCount;
-uint64_t CRig::fixCount;
 int CRig::FITtestCounter = 0;
 int CRig::CVUTtestCounter = 0;
 int CRig::bitsLen = 32;
-vector<uint32_t> CRig::shortVectors;
-vector<int> CRig::indexes;
-vector<bool> CRig::boolVector;
-
 
 //--------------------------------------- Printing methods -----------------------------------------------
 
@@ -250,7 +238,7 @@ uint64_t CRig::binomialCoeff(uint64_t n, uint64_t k) {
     return res;
 }
 
-uint64_t CRig::combinationSum(uint64_t k) { //kombinatoricka magie z prednasky
+uint64_t CRig::combinationSum(uint64_t k, uint64_t fixCount) { //kombinatoricka magie z prednasky
     uint64_t result = 0;
     k = min(k, fixCount); //mensi z cisel k ci f
 
@@ -291,7 +279,7 @@ int CRig::swapBits(unsigned int n, unsigned int p1, unsigned int p2) {
     return result;
 }
 
-void CRig::findVarBits(AFITCoin &x) {
+void CRig::findVarBits(AFITCoin &x, uint64_t &fixCount, int& varCount,vector<int>& indexes) {
     int mask;
     uint32_t testedBit1, testedBit2;
 
@@ -312,7 +300,7 @@ void CRig::findVarBits(AFITCoin &x) {
     fixCount = bitsLen - varCount;
 }
 
-void CRig::removeFixBits(AFITCoin &x) {
+void CRig::removeFixBits(AFITCoin &x, uint64_t &fixCount,vector<int>& indexes, vector<uint32_t>& shortVectors) {
     //swap varying with fixed bits
     for (uint32_t i = 0; i != x->m_Vectors.size(); i++ ) {
          uint32_t swapper = x->m_Vectors[i];
@@ -327,15 +315,9 @@ void CRig::removeFixBits(AFITCoin &x) {
          shortVectors.push_back(swapper); //adding the number without fixed bits to the new vector
     }
 
-    indexes.clear();
 }
 
-void CRig::prepareVectors(AFITCoin &x) {
-    findVarBits(x);
-    removeFixBits(x);
-}
-
-void CRig::compareWithNumbers(AFITCoin &x) {
+void CRig::compareWithNumbers(AFITCoin &x, int& varCount,uint64_t &fixCount,vector<uint32_t>& shortVectors ) {
     uint32_t mask;
     int diff = 0;
     int maxDiff;
@@ -354,7 +336,7 @@ void CRig::compareWithNumbers(AFITCoin &x) {
             x->m_Count++;
         }
         else if (maxDiff < x->m_DistMax) {
-            x->m_Count += combinationSum(x->m_DistMax - maxDiff);
+            x->m_Count += combinationSum(x->m_DistMax - maxDiff, fixCount);
         }
     }
 
@@ -363,13 +345,20 @@ void CRig::compareWithNumbers(AFITCoin &x) {
 
 void CRig::Solve (AFITCoin x) {
 
-    prepareVectors(x);
+    uint64_t fixCount;
+    int varCount;
+    vector<uint32_t> shortVectors;
+    vector<int> indexes;
+
+    //prepare vectors
+    findVarBits(x, fixCount, varCount, indexes);
+    removeFixBits(x, fixCount, indexes, shortVectors);
 
     if (x->m_Vectors.size() == 1) {
-        x->m_Count = combinationSum(x->m_DistMax); //for a single number given, we just compute the result
+        x->m_Count = combinationSum(x->m_DistMax, fixCount); //for a single number given, we just compute the result
         shortVectors.clear();
     } else {
-        compareWithNumbers(x);
+        compareWithNumbers(x, varCount,fixCount, shortVectors);
     }
 
     FITtestCounter++;
@@ -421,7 +410,7 @@ int CRig::editDistance(vector<bool>& str1, vector<bool>& str2) {
     return dp[m][n];
 }
 
-void CRig::prepareData(ACVUTCoin &x) { // move all the bits into a single array of bools
+void CRig::prepareData(ACVUTCoin &x, vector<bool> & boolVector) { // move all the bits into a single array of bools
     bool newBit;
     uint8_t currentNum;
 
@@ -433,11 +422,9 @@ void CRig::prepareData(ACVUTCoin &x) { // move all the bits into a single array 
             currentNum >>= 1;
         }
      }
-
-     //printVectors(boolVector);
 }
 
-void CRig::findPrefixSuffix(ACVUTCoin &x) {
+void CRig::findPrefixSuffix(ACVUTCoin &x, vector<bool> & boolVector) {
     int dist;
 
     for (uint64_t i = 1; i <= boolVector.size(); i++) { //find all prefixes, i must not be 0
@@ -458,10 +445,10 @@ void CRig::findPrefixSuffix(ACVUTCoin &x) {
 }
 
 void CRig::Solve (ACVUTCoin x) {
+    vector<bool> boolVector;
 
-    prepareData(x);
-    findPrefixSuffix(x);
-    boolVector.clear(); // !! problematic with threading
+    prepareData(x, boolVector);
+    findPrefixSuffix(x, boolVector);
 
     CVUTtestCounter++;
     printf("CVUTtest %d: result: %zu\n", CVUTtestCounter, x->m_Count);
