@@ -120,12 +120,11 @@ void CCoin::printCoin() {
 
 class CustomerWrapper {
 public:
-    CustomerWrapper(ACustomer & newCustomer): customerRef(newCustomer) { }
-    ACustomer & customerRef;
+    CustomerWrapper(ACustomer newCustomer): customerRef(newCustomer) { }
+    ACustomer customerRef;
     deque<CCoin> solvedCoins;
-    thread fitThread;
-    thread cvutThread;
-    thread acceptThread;
+    //thread fitThread;
+    //thread cvutThread;
 private:
 };
 
@@ -522,13 +521,16 @@ void CRig::AcceptCoin(ACustomer &c) {
 }
 
 void CRig::AddCustomer (ACustomer c) {
-    customers.push_back(c);
+    CustomerWrapper customer(c);
 
-    //customers[customerIndex].fitThread = thread (&CRig::AddFitCoins, this, ref(c), customerIndex);
-    //customers[customerIndex].cvutThread = thread (&CRig::AddCvutCoins, this, ref(c), customerIndex);
 
-    thread fitThread (&CRig::AddFitCoins, this, ref(c), customerIndex);
-    thread cvutThread (&CRig::AddCvutCoins, this, ref(c), customerIndex);
+    //customer.fitThread = thread (&CRig::AddFitCoins, this, ref(c), customerIndex);
+    //customer.cvutThread = thread (&CRig::AddCvutCoins, this, ref(c), customerIndex);
+
+    customers.push_back(customer);
+
+    //thread fitThread (&CRig::AddFitCoins, this, ref(c), customerIndex);
+    //thread cvutThread (&CRig::AddCvutCoins, this, ref(c), customerIndex);
 
 
     customerIndex++; //index to tell which customer the coin belongs to
@@ -536,8 +538,8 @@ void CRig::AddCustomer (ACustomer c) {
     //customers[customerIndex].fitThread.join();
    // customers[customerIndex].cvutThread.join();
 
-    fitThread.join();
-    cvutThread.join();
+    //fitThread.join();
+   // cvutThread.join();
 
     printBuffer();
 
@@ -564,7 +566,6 @@ void CRig::SolveCoin() {
 
 
 }
-
 
 void CRig::Start (int thrCnt) {
     //create threads
