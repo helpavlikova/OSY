@@ -84,6 +84,7 @@ class CCustomer
 {
   public:
     virtual                  ~CCustomer                    ( void ) = default;
+
     virtual AFITCoin         FITCoinGen                    ( void ) = 0;
     virtual ACVUTCoin        CVUTCoinGen                   ( void ) = 0;
   
@@ -98,17 +99,16 @@ mutex mtx;
 
 class CCoin {
 public:
-    CCoin(bool coinType, AFITCoin fitCoinRef, ACVUTCoin cvutCoinRef, int ID):
-        isFit(coinType), fitCoin(fitCoinRef), cvutCoin(cvutCoinRef), coinID(ID) { }
+    CCoin(bool coinType, AFITCoin fitCoinRef, ACVUTCoin cvutCoinRef, int idx):
+        isFit(coinType), fitCoin(fitCoinRef), cvutCoin(cvutCoinRef), customerIdx(idx) { }
     bool isFit; // if 1, then FitCoin, if 0 then CvutCoin
     AFITCoin fitCoin;
     ACVUTCoin cvutCoin;
-    int coinID;
+    int customerIdx;
     void printCoin();
 private:
 
 };
-
 
 void CCoin::printCoin() {
     if (isFit) {
@@ -117,6 +117,17 @@ void CCoin::printCoin() {
         printf ("CVUTCoin: <distMin, distMax>: <%d,%d>\n",cvutCoin->m_DistMin, cvutCoin->m_DistMax);
     }
 }
+
+class CustomerWrapper {
+public:
+    CustomerWrapper(ACustomer & newCustomer): customerRef(newCustomer) { }
+    ACustomer & customerRef;
+    deque<CCoin> solvedCoins;
+    thread fitThread;
+    thread cvutThread;
+    thread acceptThread;
+private:
+};
 
 class CRig
 {
@@ -135,6 +146,7 @@ class CRig
     static void printVectors(vector<bool>& vectors);
     static void printVectors(vector<uint32_t>& vectors);
     static void printVectors(vector<uint8_t>& vectors);
+    void printBuffer();
     static unsigned int countSetBits(int n);
     static uint64_t binomialCoeff(uint64_t n, uint64_t k);
     static void prepareData(ACVUTCoin &x, vector<bool> & boolVector);
@@ -147,20 +159,24 @@ class CRig
     static void compareWithNumbers(AFITCoin &x,int& varCount,uint64_t &fixCount, vector<uint32_t>& shortVectors);
     static int min(int x, int y, int z);
     static uint64_t min(uint64_t x, uint64_t y);
-    void AddFitCoin(ACustomer &c);
-    void AddCvutCoin(ACustomer &c);
+    void AddFitCoins(ACustomer &c, int custIdx);
+    void AddCvutCoins(ACustomer &c,  int custIdx);
+    void AcceptCoin(ACustomer &c);
     void SolveCoin();
     static int FITtestCounter;
     static int CVUTtestCounter;
     static int bitsLen;
+    static int customerIndex;
     deque<CCoin> coinBuffer;
     vector<thread> threads;
+    vector<CustomerWrapper> customers;
 };
 
 //declaration of static variables
 int CRig::FITtestCounter = 0;
 int CRig::CVUTtestCounter = 0;
 int CRig::bitsLen = 32;
+int CRig::customerIndex = 0;
 
 //--------------------------------------- Printing methods -----------------------------------------------
 
@@ -216,6 +232,15 @@ void CRig::printVectors(vector<bool>& vectors) {
         printf("%d",  static_cast<int>(vectors[i]));
     }
     printf("\n");
+}
+
+void CRig::printBuffer() {
+    int i = 0;
+    for ( auto it = this->coinBuffer . begin (); it != this->coinBuffer . end (); it++ ) {
+        printf ("[%d] %d ",i, it -> customerIdx );
+        it -> printCoin();
+        i++;
+    }
 }
 
 //--------------------------------------- FITCoin methods -----------------------------------------------
@@ -458,53 +483,46 @@ CRig::CRig (void) {
     FITtestCounter = 0;
     CVUTtestCounter = 0;
     bitsLen = 32;
+    customerIndex = 0;
 }
 
 //--------------------------------------- Parallel solution metods ----------------------------------------
 
 
-void CRig::AddFitCoin(ACustomer &c) {
-
-    int i = 1;
+void CRig::AddFitCoins(ACustomer &c, int custIdx) {
 
     for ( AFITCoin x = c -> FITCoinGen (); x ; x = c -> FITCoinGen () ) {
-        CCoin newFitCoin(true, x, nullptr, i+100);
+        CCoin newFitCoin(true, x, nullptr, custIdx);
         mtx.lock();
-        coinBuffer.push_back(newFitCoin);
+            coinBuffer.push_back(newFitCoin);
         mtx.unlock();
-        i++;
     }
 }
 
-void CRig::AddCvutCoin(ACustomer &c) {
-
-    int i = 1;
+void CRig::AddCvutCoins(ACustomer &c, int custIdx) {
 
     for ( ACVUTCoin x = c -> CVUTCoinGen (); x ; x = c -> CVUTCoinGen () ) {
-        CCoin newCvutCoin(false, nullptr, x, i+200);
+        CCoin newCvutCoin(false, nullptr, x, custIdx);
         mtx.lock();
             coinBuffer.push_back(newCvutCoin);
         mtx.unlock();
-        i++;
     }
 }
 
+void CRig::AcceptCoin(ACustomer &c) {
+
+}
+
 void CRig::AddCustomer (ACustomer c) {
+    customers.push_back(c);
 
-    thread fitThread (&CRig::AddFitCoin, this, ref(c));
-    thread cvutThread (&CRig::AddCvutCoin, this, ref(c));
+    customers[customerIndex].fitThread = thread (&CRig::AddFitCoins, this, ref(c), customerIndex);
+    customers[customerIndex].cvutThread = thread (&CRig::AddCvutCoins, this, ref(c), customerIndex);
 
-    // synchronize threads:
-    fitThread.join();                // pauses until thread finishes
-    cvutThread.join();               // pauses until thread finishes
+    customerIndex++; //index to tell which customer the coin belongs to
 
-    int i = 0;
-    for ( auto it = this->coinBuffer . begin (); it != this->coinBuffer . end (); it++ ) {
-        printf ("[%d] %d ",i, it -> coinID );
-        it -> printCoin();
-        i++;
-    }
-   // SolveCoin();
+
+    printBuffer();
 
 }
 
@@ -518,19 +536,20 @@ void CRig::SolveCoin() {
         mtx.unlock();
 
         //solve
-        if(coin.isFit) {
+        if(coin.isFit)
             Solve(coin.fitCoin);
-        }
-        else {
+        else
             Solve(coin.cvutCoin);
-        }
+
+        //ulozit
+        customers[coin.customerIdx].solvedCoins.push_back(coin);
     }
+
 
 }
 
 
 void CRig::Start (int thrCnt) {
-
     //create threads
     for ( int i = 0; i < thrCnt; i ++ )
       threads . push_back ( thread ( &CRig::SolveCoin, this ) );
@@ -538,7 +557,13 @@ void CRig::Start (int thrCnt) {
 
 void CRig::Stop (void) {
 
-    //wait for threads
+
+    for (unsigned i = 0; i < customers.size(); i++){
+        customers[i].fitThread.join();                // pauses until thread finishes
+        customers[i].cvutThread.join();               // pauses until thread finishes
+    }
+
+    //wait for working threads
     for ( auto & t : threads )
       t . join ();
 }
