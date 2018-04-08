@@ -490,22 +490,30 @@ CRig::CRig (void) {
 
 
 void CRig::AddFitCoins(ACustomer &c, int custIdx) {
+    printf("----Inside addfitCoins method\n");
 
+    int i = 0;
     for ( AFITCoin x = c -> FITCoinGen (); x ; x = c -> FITCoinGen () ) {
         CCoin newFitCoin(true, x, nullptr, custIdx);
+        printf("----Getting a fitCoin %d\n",i);
         mtx.lock();
             coinBuffer.push_back(newFitCoin);
         mtx.unlock();
+        i++;
     }
 }
 
 void CRig::AddCvutCoins(ACustomer &c, int custIdx) {
+    printf("-----Inside addcvutCoins method\n");
 
+    int i = 0;
     for ( ACVUTCoin x = c -> CVUTCoinGen (); x ; x = c -> CVUTCoinGen () ) {
         CCoin newCvutCoin(false, nullptr, x, custIdx);
+        printf("----Getting a cvutCoin %d\n",i);
         mtx.lock();
             coinBuffer.push_back(newCvutCoin);
         mtx.unlock();
+        i++;
     }
 }
 
@@ -516,11 +524,20 @@ void CRig::AcceptCoin(ACustomer &c) {
 void CRig::AddCustomer (ACustomer c) {
     customers.push_back(c);
 
-    customers[customerIndex].fitThread = thread (&CRig::AddFitCoins, this, ref(c), customerIndex);
-    customers[customerIndex].cvutThread = thread (&CRig::AddCvutCoins, this, ref(c), customerIndex);
+    //customers[customerIndex].fitThread = thread (&CRig::AddFitCoins, this, ref(c), customerIndex);
+    //customers[customerIndex].cvutThread = thread (&CRig::AddCvutCoins, this, ref(c), customerIndex);
+
+    thread fitThread (&CRig::AddFitCoins, this, ref(c), customerIndex);
+    thread cvutThread (&CRig::AddCvutCoins, this, ref(c), customerIndex);
+
 
     customerIndex++; //index to tell which customer the coin belongs to
 
+    //customers[customerIndex].fitThread.join();
+   // customers[customerIndex].cvutThread.join();
+
+    fitThread.join();
+    cvutThread.join();
 
     printBuffer();
 
@@ -559,8 +576,8 @@ void CRig::Stop (void) {
 
 
     for (unsigned i = 0; i < customers.size(); i++){
-        customers[i].fitThread.join();                // pauses until thread finishes
-        customers[i].cvutThread.join();               // pauses until thread finishes
+       // customers[i].fitThread.join();                // pauses until thread finishes
+       // customers[i].cvutThread.join();               // pauses until thread finishes
     }
 
     //wait for working threads
