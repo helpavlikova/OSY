@@ -149,7 +149,8 @@ class CRig
     static int min(int x, int y, int z);
     static uint64_t min(uint64_t x, uint64_t y);
     static int varCount;
-    static int testCounter;
+    static int FITtestCounter;
+    static int CVUTtestCounter;
     static uint64_t fixCount;
     static int bitsLen;
     static vector<uint32_t> shortVectors;
@@ -159,12 +160,14 @@ class CRig
     void AddFitCoin(ACustomer &c);
     void AddCvutCoin(ACustomer &c);
     void SolveCoin();
+    vector<thread> threads;
 };
 
 //declaration of static variables
 int CRig::varCount;
 uint64_t CRig::fixCount;
-int CRig::testCounter = 0;
+int CRig::FITtestCounter = 0;
+int CRig::CVUTtestCounter = 0;
 int CRig::bitsLen = 32;
 vector<uint32_t> CRig::shortVectors;
 vector<int> CRig::indexes;
@@ -359,8 +362,6 @@ void CRig::compareWithNumbers(AFITCoin &x) {
 }
 
 void CRig::Solve (AFITCoin x) {
-    testCounter++;
-    printf("test %d: \n", testCounter);
 
     prepareVectors(x);
 
@@ -370,6 +371,9 @@ void CRig::Solve (AFITCoin x) {
     } else {
         compareWithNumbers(x);
     }
+
+    FITtestCounter++;
+    printf("FITtest %d: result: %zu\n", FITtestCounter, x->m_Count);
 
 }
 
@@ -455,17 +459,17 @@ void CRig::findPrefixSuffix(ACVUTCoin &x) {
 
 void CRig::Solve (ACVUTCoin x) {
 
-    testCounter++;
-    printf("test %d: \n", testCounter);
-
     prepareData(x);
     findPrefixSuffix(x);
-    boolVector.clear();
+    boolVector.clear(); // !! problematic with threading
 
+    CVUTtestCounter++;
+    printf("CVUTtest %d: result: %zu\n", CVUTtestCounter, x->m_Count);
 }
 
 CRig::CRig (void) {
-    testCounter = 0;
+    FITtestCounter = 0;
+    CVUTtestCounter = 0;
     bitsLen = 32;
 }
 
@@ -509,7 +513,7 @@ void CRig::AddCustomer (ACustomer c) {
 
     int i = 0;
     for ( auto it = this->coinBuffer . begin (); it != this->coinBuffer . end (); it++ ) {
-       // printf ("[%d] %d ",i, it -> coinID );
+        printf ("[%d] %d ",i, it -> coinID );
         it -> printCoin();
         i++;
     }
@@ -529,11 +533,9 @@ void CRig::SolveCoin() {
         //solve
         if(coin.isFit) {
             Solve(coin.fitCoin);
-            printf("result: %zu\n", coin.fitCoin->m_Count);
         }
         else {
             Solve(coin.cvutCoin);
-            printf("result: %zu\n", coin.cvutCoin->m_Count);
         }
     }
 
@@ -542,10 +544,16 @@ void CRig::SolveCoin() {
 
 void CRig::Start (int thrCnt) {
 
+    //create threads
+    for ( int i = 0; i < thrCnt; i ++ )
+      threads . push_back ( thread ( &CRig::SolveCoin, this ) );
 }
 
 void CRig::Stop (void) {
 
+    //wait for threads
+    for ( auto & t : threads )
+      t . join ();
 }
 
 
