@@ -510,7 +510,7 @@ void CRig::AddFitCoins(ACustomer &c, int custIdx) {
     int i = 1;
     for ( AFITCoin x = c -> FITCoinGen (); x ; x = c -> FITCoinGen () ) {
         CCoin newFitCoin(true, x, nullptr, custIdx);
-        printf("[%d]----Getting a fitCoin %d\n",custIdx, i);
+        printf("[%d]----Adding a fitCoin %d\n",custIdx, i);
         mtx.lock();
             coinBuffer.push_back(newFitCoin);
             workCount++;
@@ -527,7 +527,7 @@ void CRig::AddCvutCoins(ACustomer &c, int custIdx) {
     int i = 1;
     for ( ACVUTCoin x = c -> CVUTCoinGen (); x ; x = c -> CVUTCoinGen () ) {
         CCoin newCvutCoin(false, nullptr, x, custIdx);
-        printf("[%d]----Getting a cvutCoin %d\n",custIdx, i);
+        printf("[%d]----Adding a cvutCoin %d\n",custIdx, i);
         mtx.lock();
             coinBuffer.push_back(newCvutCoin);
             workCount++;
@@ -548,18 +548,21 @@ void CRig::AcceptCoin(ACustomer &c, int idx) {
             mtx.lock();
                 CCoin coin = customers[idx].solvedCoins.front();
                 customers[idx].solvedCoins.pop_front();
-                workCount--;
             mtx.unlock();
 
             //odevzdat
             if(coin.isFit) {
-                c -> FITCoinAccept (coin.fitCoin);
                 printf("[%d] accepting fitCoin %zu\n", idx, coin.fitCoin->m_Count);
+                c -> FITCoinAccept (coin.fitCoin);
             }
             else {
                 printf("[%d] accepting cvutCoin %zu \n", idx, coin.cvutCoin->m_Count);
                 c -> CVUTCoinAccept (coin.cvutCoin);
             }
+
+            mtx.lock();
+                workCount--;
+            mtx.unlock();
 
         }
         //konec
@@ -630,19 +633,16 @@ void CRig::Stop (void) {
 
 
 
-    while(1) {
+    while(1) { //neni toto nechtene aktivni cekani?
+
         if(!workCount) {
             //wait for customer threads
             for ( auto & th : customerThreads ) {
-              printf("joining customer threads\n");
               th . join ();
             }
 
-
-
             //wait for working threads
             for ( auto & t : workThreads ) {
-                printf("joining worker threads\n");
                 t . join ();
             }
             break;
