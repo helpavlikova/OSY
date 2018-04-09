@@ -169,6 +169,7 @@ class CRig
     vector<thread> customerThreads;
     vector<CustomerWrapper> customers;
     bool endFlag;
+    int customerCounter;
 };
 
 //declaration of static variables
@@ -484,6 +485,7 @@ CRig::CRig (void) {
     bitsLen = 32;
     customerIndex = 0;
     endFlag = false;
+    customerCounter = 0;
 }
 
 //--------------------------------------- Parallel solution metods ----------------------------------------
@@ -492,7 +494,7 @@ CRig::CRig (void) {
 void CRig::AddFitCoins(ACustomer &c, int custIdx) {
     printf("----Inside addfitCoins method %d\n", custIdx);
 
-    int i = 0;
+    int i = 1;
     for ( AFITCoin x = c -> FITCoinGen (); x ; x = c -> FITCoinGen () ) {
         CCoin newFitCoin(true, x, nullptr, custIdx);
         printf("[%d]----Getting a fitCoin %d\n",custIdx, i);
@@ -501,12 +503,17 @@ void CRig::AddFitCoins(ACustomer &c, int custIdx) {
         mtx.unlock();
         i++;
     }
+    mtx.lock();
+        customerCounter--;
+    mtx.unlock();
+
+    printf("added all fit coins from customer %d\n", custIdx);
 }
 
 void CRig::AddCvutCoins(ACustomer &c, int custIdx) {
     printf("-----Inside addcvutCoins method %d\n", custIdx);
 
-    int i = 0;
+    int i = 1;
     for ( ACVUTCoin x = c -> CVUTCoinGen (); x ; x = c -> CVUTCoinGen () ) {
         CCoin newCvutCoin(false, nullptr, x, custIdx);
         printf("[%d]----Getting a cvutCoin %d\n",custIdx, i);
@@ -515,6 +522,12 @@ void CRig::AddCvutCoins(ACustomer &c, int custIdx) {
         mtx.unlock();
         i++;
     }
+
+    mtx.lock();
+        customerCounter--;
+    mtx.unlock();
+
+    printf("added all cvut coins from customer %d\n", custIdx);
 }
 
 void CRig::AcceptCoin(ACustomer &c) {
@@ -523,16 +536,19 @@ void CRig::AcceptCoin(ACustomer &c) {
 
 void CRig::AddCustomer (ACustomer c) {
 
+    printf("---AddCustomer\n");
     CustomerWrapper customer(c);
 
+    customerCounter +=2;
 
     customerThreads . push_back ( thread (&CRig::AddFitCoins, this, ref(c), customerIndex) ); //thread to add fitcoins
     customerThreads . push_back (  thread (&CRig::AddCvutCoins, this, ref(c), customerIndex) ); //thread to add cvutcoins
 
+
     customers.push_back(customer);
 
     customerIndex++; //index to tell which customer the coin belongs to
-   // printBuffer();
+    printf("customer index = %d\n", customerIndex);
 
 }
 
@@ -541,7 +557,7 @@ void CRig::SolveCoin() {
 
 
     while(1) {
-        if(coinBuffer . size () > 0) {
+        if(coinBuffer . size () > 0) { //aktivni cekani - prepsat na CV ci na semafor
             //vybrat
             mtx.lock();
                 CCoin coin = coinBuffer.front();
@@ -572,18 +588,24 @@ void CRig::Start (int thrCnt) {
 }
 
 void CRig::Stop (void) {
+    printf("------STOP---Calling stop function\n");
     endFlag = true; // indikator konce pro funkci SolveCoin
+
+
+    while(customerCounter > 0) {
+
+    }
 
     //wait for customer threads
     for ( auto & th : customerThreads )
       th . join ();
 
 
-    //if(coinBuffer . size () == 0) { //vlakna sesbirame az teprve po vyprazdneni pracovniho bufferu
-        //wait for working threads
-        for ( auto & t : workThreads )
-          t . join ();
-   // }
+
+    //wait for working threads
+    for ( auto & t : workThreads )
+        t . join ();
+
 }
 
 
