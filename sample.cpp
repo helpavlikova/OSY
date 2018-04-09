@@ -171,6 +171,7 @@ class CRig
     vector<CustomerWrapper> customers;
     bool endFlag;
     int customerCounter;
+    int workCount;
 };
 
 //declaration of static variables
@@ -497,6 +498,7 @@ CRig::CRig (void) {
     customerIndex = 0;
     endFlag = false;
     customerCounter = 0;
+    workCount = 0;
 }
 
 //--------------------------------------- Parallel solution metods ----------------------------------------
@@ -511,6 +513,7 @@ void CRig::AddFitCoins(ACustomer &c, int custIdx) {
         printf("[%d]----Getting a fitCoin %d\n",custIdx, i);
         mtx.lock();
             coinBuffer.push_back(newFitCoin);
+            workCount++;
         mtx.unlock();
         i++;
     }
@@ -527,6 +530,7 @@ void CRig::AddCvutCoins(ACustomer &c, int custIdx) {
         printf("[%d]----Getting a cvutCoin %d\n",custIdx, i);
         mtx.lock();
             coinBuffer.push_back(newCvutCoin);
+            workCount++;
         mtx.unlock();
         i++;
     }
@@ -539,12 +543,12 @@ void CRig::AcceptCoin(ACustomer &c, int idx) {
     printf("inside AcceptCoin %d\n", idx);
 
     while (1) {
-        if (customers[idx].solvedCoins. size () > 0) {
-            printf ("!!!!!!!!!!!!!I am inside the if in acceptCoin!\n");
+        if (customers[idx].solvedCoins. size () > 0) { //there are some solved problems in the buffer to be accepted
             //vybrat
             mtx.lock();
                 CCoin coin = customers[idx].solvedCoins.front();
                 customers[idx].solvedCoins.pop_front();
+                workCount--;
             mtx.unlock();
 
             //odevzdat
@@ -559,7 +563,7 @@ void CRig::AcceptCoin(ACustomer &c, int idx) {
 
         }
         //konec
-        if((customers[idx].solvedCoins. size () == 0) && endFlag) //buffer je prazdny a zaroven fce Stop() nastavila endflag
+        if(endFlag && (workCount == 0) ) //buffer je prazdny a zaroven fce Stop() nastavila endflag
             break;
     }
 
@@ -624,21 +628,29 @@ void CRig::Stop (void) {
     printf("------STOP---Calling stop function\n");
     endFlag = true; // indikator konce pro funkci SolveCoin
 
-    //wait for customer threads
-    for ( auto & th : customerThreads ) {
-      printf("joining customer threads\n");
-      th . join ();
+
+
+    while(1) {
+        if(!workCount) {
+            //wait for customer threads
+            for ( auto & th : customerThreads ) {
+              printf("joining customer threads\n");
+              th . join ();
+            }
+
+
+
+            //wait for working threads
+            for ( auto & t : workThreads ) {
+                printf("joining worker threads\n");
+                t . join ();
+            }
+            break;
+        }
     }
 
-
-
-    //wait for working threads
-    for ( auto & t : workThreads ) {
-        printf("joining worker threads\n");
-        t . join ();
-    }
-
-    //printCustomers();
+    if (coinBuffer . size () > 0)
+        printCustomers();
 }
 
 
