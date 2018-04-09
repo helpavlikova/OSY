@@ -123,8 +123,6 @@ public:
     CustomerWrapper(ACustomer newCustomer): customerRef(newCustomer) { }
     ACustomer customerRef;
     deque<CCoin> solvedCoins;
-    //thread fitThread;
-    //thread cvutThread;
 private:
 };
 
@@ -167,7 +165,8 @@ class CRig
     static int bitsLen;
     static int customerIndex;
     deque<CCoin> coinBuffer;
-    vector<thread> threads;
+    vector<thread> workThreads;
+    vector<thread> customerThreads;
     vector<CustomerWrapper> customers;
 };
 
@@ -521,26 +520,16 @@ void CRig::AcceptCoin(ACustomer &c) {
 }
 
 void CRig::AddCustomer (ACustomer c) {
+
     CustomerWrapper customer(c);
 
 
-    //customer.fitThread = thread (&CRig::AddFitCoins, this, ref(c), customerIndex);
-    //customer.cvutThread = thread (&CRig::AddCvutCoins, this, ref(c), customerIndex);
+    customerThreads . push_back ( thread (&CRig::AddFitCoins, this, ref(c), customerIndex) ); //thread to add fitcoins
+    customerThreads . push_back (  thread (&CRig::AddCvutCoins, this, ref(c), customerIndex) ); //thread to add cvutcoins
 
     customers.push_back(customer);
 
-    //thread fitThread (&CRig::AddFitCoins, this, ref(c), customerIndex);
-    //thread cvutThread (&CRig::AddCvutCoins, this, ref(c), customerIndex);
-
-
     customerIndex++; //index to tell which customer the coin belongs to
-
-    //customers[customerIndex].fitThread.join();
-   // customers[customerIndex].cvutThread.join();
-
-    //fitThread.join();
-   // cvutThread.join();
-
     printBuffer();
 
 }
@@ -570,20 +559,18 @@ void CRig::SolveCoin() {
 void CRig::Start (int thrCnt) {
     //create threads
     for ( int i = 0; i < thrCnt; i ++ )
-      threads . push_back ( thread ( &CRig::SolveCoin, this ) );
+      workThreads . push_back ( thread ( &CRig::SolveCoin, this ) );
 }
 
 void CRig::Stop (void) {
 
-
-    for (unsigned i = 0; i < customers.size(); i++){
-       // customers[i].fitThread.join();                // pauses until thread finishes
-       // customers[i].cvutThread.join();               // pauses until thread finishes
-    }
-
     //wait for working threads
-    for ( auto & t : threads )
+    for ( auto & t : workThreads )
       t . join ();
+
+    //wait for customer threads
+    for ( auto & th : customerThreads )
+      th . join ();
 }
 
 
