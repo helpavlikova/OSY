@@ -112,9 +112,9 @@ private:
 
 void CCoin::printCoin() {
     if (isFit) {
-        printf("FITCoin: distMax: %d\n", fitCoin->m_DistMax);
+        printf("FITCoin: distMax: %d (%zu)\n", fitCoin->m_DistMax,  fitCoin->m_Count);
     } else {
-        printf ("CVUTCoin: <distMin, distMax>: <%d,%d>\n",cvutCoin->m_DistMin, cvutCoin->m_DistMax);
+        printf ("CVUTCoin: <distMin, distMax>: <%d,%d> (%zu)\n", cvutCoin->m_DistMin, cvutCoin->m_DistMax, cvutCoin->m_Count);
     }
 }
 
@@ -143,6 +143,7 @@ class CRig
     static void printVectors(vector<bool>& vectors);
     static void printVectors(vector<uint32_t>& vectors);
     static void printVectors(vector<uint8_t>& vectors);
+    void printCustomers();
     void printBuffer();
     static unsigned int countSetBits(int n);
     static uint64_t binomialCoeff(uint64_t n, uint64_t k);
@@ -158,7 +159,7 @@ class CRig
     static uint64_t min(uint64_t x, uint64_t y);
     void AddFitCoins(ACustomer &c, int custIdx);
     void AddCvutCoins(ACustomer &c,  int custIdx);
-    void AcceptCoin(ACustomer &c);
+    void AcceptCoin(ACustomer &c, int idx);
     void SolveCoin();
     static int FITtestCounter;
     static int CVUTtestCounter;
@@ -179,6 +180,16 @@ int CRig::bitsLen = 32;
 int CRig::customerIndex = 0;
 
 //--------------------------------------- Printing methods -----------------------------------------------
+
+void CRig::printCustomers(){
+    for (unsigned i = 0; i < customers.size(); i++) {
+        printf ("customer %d:\n",i);
+        for (unsigned j = 0; j < customers[i]. solvedCoins . size (); j ++) {
+            customers[i]. solvedCoins[j].printCoin();
+        }
+    }
+}
+
 
 uint64_t CRig::min(uint64_t x, uint64_t y) {
     if (x < y)
@@ -503,11 +514,8 @@ void CRig::AddFitCoins(ACustomer &c, int custIdx) {
         mtx.unlock();
         i++;
     }
-    mtx.lock();
-        customerCounter--;
-    mtx.unlock();
 
-    printf("added all fit coins from customer %d\n", custIdx);
+  //  printf("added all fit coins from customer %d\n", custIdx);
 }
 
 void CRig::AddCvutCoins(ACustomer &c, int custIdx) {
@@ -523,14 +531,37 @@ void CRig::AddCvutCoins(ACustomer &c, int custIdx) {
         i++;
     }
 
-    mtx.lock();
-        customerCounter--;
-    mtx.unlock();
 
-    printf("added all cvut coins from customer %d\n", custIdx);
+  //  printf("added all cvut coins from customer %d\n", custIdx);
 }
 
-void CRig::AcceptCoin(ACustomer &c) {
+void CRig::AcceptCoin(ACustomer &c, int idx) {
+    printf("inside AcceptCoin %d\n", idx);
+
+    while (1) {
+        if (customers[idx].solvedCoins. size () > 0) {
+            printf ("!!!!!!!!!!!!!I am inside the if in acceptCoin!\n");
+            //vybrat
+            mtx.lock();
+                CCoin coin = customers[idx].solvedCoins.front();
+                customers[idx].solvedCoins.pop_front();
+            mtx.unlock();
+
+            //odevzdat
+            if(coin.isFit) {
+                c -> FITCoinAccept (coin.fitCoin);
+                printf("[%d] accepting fitCoin %zu\n", idx, coin.fitCoin->m_Count);
+            }
+            else {
+                printf("[%d] accepting cvutCoin %zu \n", idx, coin.cvutCoin->m_Count);
+                c -> CVUTCoinAccept (coin.cvutCoin);
+            }
+
+        }
+        //konec
+        if((customers[idx].solvedCoins. size () == 0) && endFlag) //buffer je prazdny a zaroven fce Stop() nastavila endflag
+            break;
+    }
 
 }
 
@@ -539,21 +570,21 @@ void CRig::AddCustomer (ACustomer c) {
     printf("---AddCustomer\n");
     CustomerWrapper customer(c);
 
-    customerCounter +=2;
 
     customerThreads . push_back ( thread (&CRig::AddFitCoins, this, ref(c), customerIndex) ); //thread to add fitcoins
     customerThreads . push_back (  thread (&CRig::AddCvutCoins, this, ref(c), customerIndex) ); //thread to add cvutcoins
+    customerThreads . push_back (  thread (&CRig::AcceptCoin, this, ref(c), customerIndex) ); //thread to accept coins of both types
 
 
     customers.push_back(customer);
 
     customerIndex++; //index to tell which customer the coin belongs to
-    printf("customer index = %d\n", customerIndex);
+   // printf("customer index = %d\n", customerIndex);
 
 }
 
 void CRig::SolveCoin() {
-    printf("-----SolveCoin\n");
+  //  printf("-----SolveCoin\n");
 
 
     while(1) {
@@ -571,7 +602,9 @@ void CRig::SolveCoin() {
                 Solve(coin.cvutCoin);
 
             //ulozit
-            customers[coin.customerIdx].solvedCoins.push_back(coin);
+            mtx.lock();
+                customers[coin.customerIdx].solvedCoins.push_back(coin);
+            mtx.unlock();
         }
         //konec
         if((coinBuffer . size () == 0) && endFlag) //buffer je prazdny a zaroven fce Stop() nastavila endflag
@@ -591,21 +624,21 @@ void CRig::Stop (void) {
     printf("------STOP---Calling stop function\n");
     endFlag = true; // indikator konce pro funkci SolveCoin
 
-
-    while(customerCounter > 0) {
-
-    }
-
     //wait for customer threads
-    for ( auto & th : customerThreads )
+    for ( auto & th : customerThreads ) {
+      printf("joining customer threads\n");
       th . join ();
+    }
 
 
 
     //wait for working threads
-    for ( auto & t : workThreads )
+    for ( auto & t : workThreads ) {
+        printf("joining worker threads\n");
         t . join ();
+    }
 
+    //printCustomers();
 }
 
 
