@@ -168,6 +168,7 @@ class CRig
     vector<thread> workThreads;
     vector<thread> customerThreads;
     vector<CustomerWrapper> customers;
+    bool endFlag;
 };
 
 //declaration of static variables
@@ -482,6 +483,7 @@ CRig::CRig (void) {
     CVUTtestCounter = 0;
     bitsLen = 32;
     customerIndex = 0;
+    endFlag = false;
 }
 
 //--------------------------------------- Parallel solution metods ----------------------------------------
@@ -535,8 +537,10 @@ void CRig::AddCustomer (ACustomer c) {
 }
 
 void CRig::SolveCoin() {
+    printf("-----SolveCoin\n");
 
-    while(coinBuffer . size () > 0) {
+
+    while(1) {
         //vybrat
         mtx.lock();
             CCoin coin = coinBuffer.front();
@@ -551,6 +555,10 @@ void CRig::SolveCoin() {
 
         //ulozit
         customers[coin.customerIdx].solvedCoins.push_back(coin);
+
+        //konec
+        if(coinBuffer . size () == 0 && endFlag) //buffer je prazdny a zaroven fce Stop() nastavila endflag
+            break;
     }
 
 
@@ -563,6 +571,7 @@ void CRig::Start (int thrCnt) {
 }
 
 void CRig::Stop (void) {
+    endFlag = true; // indikator konce pro funkci SolveCoin
 
     //wait for working threads
     for ( auto & t : workThreads )
