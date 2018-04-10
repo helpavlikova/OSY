@@ -99,12 +99,13 @@ mutex mtx;
 
 class CCoin {
 public:
-    CCoin(bool coinType, AFITCoin fitCoinRef, ACVUTCoin cvutCoinRef, int idx):
-        isFit(coinType), fitCoin(fitCoinRef), cvutCoin(cvutCoinRef), customerIdx(idx) { }
+    CCoin(bool coinType, AFITCoin fitCoinRef, ACVUTCoin cvutCoinRef, int idx, int ID):
+        isFit(coinType), fitCoin(fitCoinRef), cvutCoin(cvutCoinRef), customerIdx(idx), ID(ID) { }
     bool isFit; // if 1, then FitCoin, if 0 then CvutCoin
     AFITCoin fitCoin;
     ACVUTCoin cvutCoin;
     int customerIdx;
+    int ID;
     void printCoin();
 private:
 
@@ -112,9 +113,9 @@ private:
 
 void CCoin::printCoin() {
     if (isFit) {
-        printf("FITCoin: distMax: %d (%zu)\n", fitCoin->m_DistMax,  fitCoin->m_Count);
+        printf("FITCoin %d: distMax: %d (%zu)\n", ID, fitCoin->m_DistMax,  fitCoin->m_Count);
     } else {
-        printf ("CVUTCoin: <distMin, distMax>: <%d,%d> (%zu)\n", cvutCoin->m_DistMin, cvutCoin->m_DistMax, cvutCoin->m_Count);
+        printf ("CVUTCoin %d: <distMin, distMax>: <%d,%d> (%zu)\n", ID, cvutCoin->m_DistMin, cvutCoin->m_DistMax, cvutCoin->m_Count);
     }
 }
 
@@ -157,9 +158,9 @@ class CRig
     static void compareWithNumbers(AFITCoin &x,int& varCount,uint64_t &fixCount, vector<uint32_t>& shortVectors);
     static int min(int x, int y, int z);
     static uint64_t min(uint64_t x, uint64_t y);
-    void AddFitCoins(ACustomer &c, int custIdx);
-    void AddCvutCoins(ACustomer &c,  int custIdx);
-    void AcceptCoin(ACustomer &c, int idx);
+    void AddFitCoins(ACustomer c, int custIdx);
+    void AddCvutCoins(ACustomer c,  int custIdx);
+    void AcceptCoin(ACustomer c, int idx);
     void SolveCoin();
     static int FITtestCounter;
     static int CVUTtestCounter;
@@ -189,14 +190,6 @@ void CRig::printCustomers(){
             customers[i]. solvedCoins[j].printCoin();
         }
     }
-}
-
-
-uint64_t CRig::min(uint64_t x, uint64_t y) {
-    if (x < y)
-        return x;
-    else
-        return y;
 }
 
 //via geeksforgeeks
@@ -256,6 +249,13 @@ void CRig::printBuffer() {
 }
 
 //--------------------------------------- FITCoin methods -----------------------------------------------
+
+uint64_t CRig::min(uint64_t x, uint64_t y) {
+    if (x < y)
+        return x;
+    else
+        return y;
+}
 
 //via geeksforgeeks
 uint64_t CRig::binomialCoeff(uint64_t n, uint64_t k) {
@@ -399,7 +399,7 @@ void CRig::Solve (AFITCoin x) {
     }
 
     FITtestCounter++;
-    printf("FITtest %d: result: %zu\n", FITtestCounter, x->m_Count);
+  //  printf("FITtest %d: result: %zu\n", FITtestCounter, x->m_Count);
 
 }
 
@@ -488,7 +488,7 @@ void CRig::Solve (ACVUTCoin x) {
     findPrefixSuffix(x, boolVector);
 
     CVUTtestCounter++;
-    printf("CVUTtest %d: result: %zu\n", CVUTtestCounter, x->m_Count);
+   // printf("CVUTtest %d: result: %zu\n", CVUTtestCounter, x->m_Count);
 }
 
 CRig::CRig (void) {
@@ -504,13 +504,13 @@ CRig::CRig (void) {
 //--------------------------------------- Parallel solution metods ----------------------------------------
 
 
-void CRig::AddFitCoins(ACustomer &c, int custIdx) {
+void CRig::AddFitCoins(ACustomer c, int custIdx) {
     printf("----Inside addfitCoins method %d\n", custIdx);
 
     int i = 1;
     for ( AFITCoin x = c -> FITCoinGen (); x ; x = c -> FITCoinGen () ) {
-        CCoin newFitCoin(true, x, nullptr, custIdx);
-        printf("[%d]----Adding a fitCoin %d\n",custIdx, i);
+        CCoin newFitCoin(true, x, nullptr, custIdx, custIdx * 100 + i);
+     //   printf("[%d]----Adding a fitCoin %d\n",custIdx, custIdx * 100 + i);
         mtx.lock();
             coinBuffer.push_back(newFitCoin);
             workCount++;
@@ -518,16 +518,16 @@ void CRig::AddFitCoins(ACustomer &c, int custIdx) {
         i++;
     }
 
-  //  printf("added all fit coins from customer %d\n", custIdx);
+   // printf("----added all fit coins from customer %d\n", custIdx);
 }
 
-void CRig::AddCvutCoins(ACustomer &c, int custIdx) {
+void CRig::AddCvutCoins(ACustomer c, int custIdx) {
     printf("-----Inside addcvutCoins method %d\n", custIdx);
 
     int i = 1;
     for ( ACVUTCoin x = c -> CVUTCoinGen (); x ; x = c -> CVUTCoinGen () ) {
-        CCoin newCvutCoin(false, nullptr, x, custIdx);
-        printf("[%d]----Adding a cvutCoin %d\n",custIdx, i);
+        CCoin newCvutCoin(false, nullptr, x, custIdx, custIdx * 1000 + i);
+      //  printf("[%d]----Adding a cvutCoin %d\n",custIdx, custIdx * 1000 + i);
         mtx.lock();
             coinBuffer.push_back(newCvutCoin);
             workCount++;
@@ -536,10 +536,10 @@ void CRig::AddCvutCoins(ACustomer &c, int custIdx) {
     }
 
 
-  //  printf("added all cvut coins from customer %d\n", custIdx);
+   // printf("-----added all cvut coins from customer %d\n", custIdx);
 }
 
-void CRig::AcceptCoin(ACustomer &c, int idx) {
+void CRig::AcceptCoin(ACustomer c, int idx) {
     printf("inside AcceptCoin %d\n", idx);
 
     while (1) {
@@ -552,11 +552,13 @@ void CRig::AcceptCoin(ACustomer &c, int idx) {
 
             //odevzdat
             if(coin.isFit) {
-                printf("[%d] accepting fitCoin %zu\n", idx, coin.fitCoin->m_Count);
+              //  printf("[%d] accepting fitCoin %d (result %zu)\n", idx, coin.ID, coin.fitCoin->m_Count);
+              //  coin.printCoin();
                 c -> FITCoinAccept (coin.fitCoin);
             }
             else {
-                printf("[%d] accepting cvutCoin %zu \n", idx, coin.cvutCoin->m_Count);
+              //  printf("[%d] accepting cvutCoin %d (result %zu) \n", idx, coin.ID, coin.cvutCoin->m_Count);
+              //  coin.printCoin();
                 c -> CVUTCoinAccept (coin.cvutCoin);
             }
 
@@ -574,13 +576,13 @@ void CRig::AcceptCoin(ACustomer &c, int idx) {
 
 void CRig::AddCustomer (ACustomer c) {
 
-    printf("---AddCustomer\n");
+   // printf("---AddCustomer\n");
     CustomerWrapper customer(c);
 
 
-    customerThreads . push_back ( thread (&CRig::AddFitCoins, this, ref(c), customerIndex) ); //thread to add fitcoins
-    customerThreads . push_back (  thread (&CRig::AddCvutCoins, this, ref(c), customerIndex) ); //thread to add cvutcoins
-    customerThreads . push_back (  thread (&CRig::AcceptCoin, this, ref(c), customerIndex) ); //thread to accept coins of both types
+    customerThreads . push_back ( thread (&CRig::AddFitCoins, this, c, customerIndex) ); //thread to add fitcoins
+    customerThreads . push_back (  thread (&CRig::AddCvutCoins, this, c, customerIndex) ); //thread to add cvutcoins
+    customerThreads . push_back (  thread (&CRig::AcceptCoin, this,  c, customerIndex) ); //thread to accept coins of both types
 
 
     customers.push_back(customer);
