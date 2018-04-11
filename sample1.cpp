@@ -173,6 +173,8 @@ class CRig
     int workCount;
     mutex mtxCoinBuffer;
     mutex mtxSolved;
+    mutex mtx;
+    condition_variable cv;
 };
 
 //declaration of static variables
@@ -514,6 +516,7 @@ void CRig::AddFitCoins(ACustomer c, int custIdx) {
         mtxCoinBuffer.lock();
             coinBuffer.push_back(newFitCoin);
             workCount++;
+            cv.notify_all();
         mtxCoinBuffer.unlock();
         i++;
     }
@@ -531,6 +534,7 @@ void CRig::AddCvutCoins(ACustomer c, int custIdx) {
         mtxCoinBuffer.lock();
             coinBuffer.push_back(newCvutCoin);
             workCount++;
+            cv.notify_all();
         mtxCoinBuffer.unlock();
         i++;
     }
@@ -597,6 +601,11 @@ void CRig::SolveCoin() {
 
 
     while(1) {
+
+        unique_lock<mutex> lck(mtx);
+        while (coinBuffer . size () == 0 && !endFlag )
+            cv.wait(lck);
+
         if(coinBuffer . size () > 0) { //aktivni cekani - prepsat na CV ci na semafor
             //vybrat
             mtxCoinBuffer.lock();
