@@ -174,7 +174,9 @@ class CRig
     mutex mtxCoinBuffer;
     mutex mtxSolved;
     mutex mtx;
-    condition_variable cv;
+    sem_t semEmpty;
+    sem_t semFull;
+
 };
 
 //declaration of static variables
@@ -501,6 +503,8 @@ CRig::CRig (void) {
     endFlag = false;
     customerCounter = 0;
     workCount = 0;
+    sem_init ( &semEmpty, 0, 100 );
+    sem_init ( &semFull, 0, 0 );
 }
 
 //--------------------------------------- Parallel solution metods ----------------------------------------
@@ -513,12 +517,16 @@ void CRig::AddFitCoins(ACustomer c, int custIdx) {
     for ( AFITCoin x = c -> FITCoinGen (); x ; x = c -> FITCoinGen () ) {
         CCoin newFitCoin(true, x, nullptr, custIdx, custIdx * 100 + i);
      //   printf("[%d]----Adding a fitCoin %d\n",custIdx, custIdx * 100 + i);
+
+        sem_wait(&semEmpty);
+
         mtxCoinBuffer.lock();
             coinBuffer.push_back(newFitCoin);
             workCount++;
-            cv.notify_all();
         mtxCoinBuffer.unlock();
         i++;
+
+        sem_post(&semFull); //zvyseni semaforu, signal konzumentovi SolveCoin
     }
 
    // printf("----added all fit coins from customer %d\n", custIdx);
@@ -531,12 +539,16 @@ void CRig::AddCvutCoins(ACustomer c, int custIdx) {
     for ( ACVUTCoin x = c -> CVUTCoinGen (); x ; x = c -> CVUTCoinGen () ) {
         CCoin newCvutCoin(false, nullptr, x, custIdx, custIdx * 1000 + i);
       //  printf("[%d]----Adding a cvutCoin %d\n",custIdx, custIdx * 1000 + i);
+
+        sem_wait(&semEmpty);
+
         mtxCoinBuffer.lock();
             coinBuffer.push_back(newCvutCoin);
             workCount++;
-            cv.notify_all();
         mtxCoinBuffer.unlock();
         i++;
+
+        sem_post(&semFull); //zvyseni semaforu, signal konzumentovi SolveCoin
     }
 
 
@@ -572,8 +584,9 @@ void CRig::AcceptCoin(ACustomer c, int idx) {
 
         }
         //konec
-        if(endFlag && (workCount == 0) ) //buffer je prazdny a zaroven fce Stop() nastavila endflag
+        if(endFlag && (workCount == 0) ) { //buffer je prazdny a zaroven fce Stop() nastavila endflag
             break;
+        }
     }
 
 }
@@ -597,16 +610,14 @@ void CRig::AddCustomer (ACustomer c) {
 }
 
 void CRig::SolveCoin() {
-  //  printf("-----SolveCoin\n");
+    printf("-----SolveCoin\n");
 
 
     while(1) {
 
-        unique_lock<mutex> lck(mtx);
-        while (coinBuffer . size () == 0 && !endFlag )
-            cv.wait(lck);
+        //semafor
+        sem_wait(&semFull);
 
-        if(coinBuffer . size () > 0) { //aktivni cekani - prepsat na CV ci na semafor
             //vybrat
             mtxCoinBuffer.lock();
                 CCoin coin = coinBuffer.front();
@@ -623,10 +634,14 @@ void CRig::SolveCoin() {
             mtxSolved.lock();
                 customers[coin.customerIdx].solvedCoins.push_back(coin);
             mtxSolved.unlock();
-        }
+
+        sem_post(&semEmpty);
+
         //konec
-        if((coinBuffer . size () == 0) && endFlag) //buffer je prazdny a zaroven fce Stop() nastavila endflag
+        if((coinBuffer . size () == 0) && endFlag) { //buffer je prazdny a zaroven fce Stop() nastavila endflag
+            printf("End of SolveCoin\n");
             break;
+        }
     }
 
 
@@ -651,6 +666,7 @@ void CRig::Stop (void) {
             for ( auto & th : customerThreads ) {
               th . join ();
             }
+
 
             //wait for working threads
             for ( auto & t : workThreads ) {
