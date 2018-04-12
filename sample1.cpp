@@ -95,6 +95,10 @@ class CCustomer
 //=================================================================================================
 #endif /* __PROGTEST__ */
 
+
+mutex mtxCoinBuffer;
+mutex mtxSolved;
+
 class CCoin {
 public:
     CCoin(bool coinType, AFITCoin fitCoinRef, ACVUTCoin cvutCoinRef, int idx, int ID):
@@ -164,7 +168,7 @@ class CRig
     void AddFitCoins(ACustomer c, int custIdx);
     void AddCvutCoins(ACustomer c,  int custIdx);
     void AcceptCoin(ACustomer c, int idx);
-    void SolveCoin();
+    void SolveCoin(int thrID);
     static int FITtestCounter;
     static int CVUTtestCounter;
     static int bitsLen;
@@ -176,11 +180,9 @@ class CRig
     bool endFlag;
     int customerCounter;
     int workCount;
-    mutex mtxCoinBuffer;
-    mutex mtxSolved;
-    mutex mtx;
     sem_t semCoinEmpty;
     sem_t semCoinFull;
+    int threadsEnded;
 
 };
 
@@ -510,6 +512,7 @@ CRig::CRig (void) {
     workCount = 0;
     sem_init ( &semCoinEmpty, 0, 100 );
     sem_init ( &semCoinFull, 0, 0 );
+    threadsEnded = 0;
 }
 
 //--------------------------------------- Parallel solution metods ----------------------------------------
@@ -594,6 +597,7 @@ void CRig::AcceptCoin(ACustomer c, int idx) {
         }
         //konec
         if(endFlag && (workCount == 0) ) { //buffer je prazdny a zaroven fce Stop() nastavila endflag
+            printf("End of acceptCoin for customer %d\n",idx);
             break;
         }
     }
@@ -618,8 +622,8 @@ void CRig::AddCustomer (ACustomer c) {
 
 }
 
-void CRig::SolveCoin() {
-    printf("-----SolveCoin\n");
+void CRig::SolveCoin(int thrID) {
+    printf("-----SolveCoin %d\n", thrID);
     while(1) {
 
         //semafor
@@ -649,7 +653,10 @@ void CRig::SolveCoin() {
 
         //konec
         if((coinBuffer . size () == 0) && endFlag) { //buffer je prazdny a zaroven fce Stop() nastavila endflag
-            printf("End of SolveCoin\n");
+            mtxSolved.lock();
+                threadsEnded++;
+            mtxSolved.unlock();
+            printf("End of SolveCoin %d, so far %d work threads have ended\n",thrID, threadsEnded);
             break;
         }
     }
@@ -660,7 +667,7 @@ void CRig::SolveCoin() {
 void CRig::Start (int thrCnt) {
     //create threads
     for ( int i = 0; i < thrCnt; i ++ )
-      workThreads . push_back ( thread ( &CRig::SolveCoin, this ) );
+      workThreads . push_back ( thread ( &CRig::SolveCoin, this, i ) );
 }
 
 void CRig::Stop (void) {

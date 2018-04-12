@@ -82,6 +82,7 @@ class CCustomerTest : public CCustomer
   /* 13 */    m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x5ba85e68, 0x3aa85e78, 0x5aaa5ef8, 0x1baa5efa, 0x7ba856ea, 0x5baa5e68, 0x5bb85678, 0x3aaa5668, 0x5aaa56fa, 0x1bba5e6a }, 1 ), 0 );
   /* 14 */   m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x72d8aa96, 0x64c8a296, 0x76d8aaf6, 0x64c0aafe, 0x76d8aa9a, 0x76d0aaba, 0x74c0aab2, 0x70c8aaba, 0x64d0aa96, 0x76c0aad2, 0x62c0a2be, 0x74d0aa96, 0x76c8a2f2, 0x74c8aafe, 0x76c8aada, 0x66c0aaf6, 0x70d0aab2, 0x66c0aab6, 0x60d0a29a, 0x76c8aad2, 0x74c8aab2, 0x66c0a2f2, 0x62d8aa96, 0x60d8a2d2, 0x76d8aada, 0x62c0aab6, 0x72d8aaf6, 0x74d0a2de, 0x64c8aab2, 0x60c0a2f2, 0x72d8a292, 0x60c8a2ba, 0x64c8aaf6, 0x72d0a296, 0x66c8a296, 0x64c0a292, 0x62c8aabe, 0x62c8a2b6, 0x76d0aabe, 0x76d8a2d6, 0x62d0aafa, 0x60d8a2fa, 0x74d0aada, 0x60c0aafa, 0x76c0a2f6, 0x74c0aab2, 0x70c0a2d2, 0x70d0aa9a, 0x62c0aada, 0x72d8aafa }, 12 ), 8084682 );
 
+      //  for (int i = 0; i < 1000; i++)
   /* 1 */    m_TestsCVUT . emplace_back ( make_shared<CCVUTCoin> ( vector<uint8_t>{ 0x45, 0x23, 0x98, 0x48, 0xdc }, 0, 1 ), 10 );
   /* 2 */    m_TestsCVUT . emplace_back ( make_shared<CCVUTCoin> ( vector<uint8_t>{ 0x5c, 0x94, 0x58, 0x1f, 0x7c }, 3, 8 ), 277 );
   /* 3 */    m_TestsCVUT . emplace_back ( make_shared<CCVUTCoin> ( vector<uint8_t>{ 0x58, 0xd7, 0x41, 0x1e, 0xa9 }, 1, 12 ), 704 );
@@ -120,30 +121,7 @@ void               TestParallel                            ( void )
 
   s . AddCustomer ( make_shared<CCustomerTest> () );
   s . Start ( 20 );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
+//  s . AddCustomer ( make_shared<CCustomerTest> () );
   s . Stop ();
 }
 //=================================================================================================

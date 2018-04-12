@@ -7,8 +7,8 @@ class CCustomerTest : public CCustomer
                              CCustomerTest                 ( void )
                              : m_FITIdx ( 0 ),
                                m_CVUTIdx ( 0 )
-    {
-      prepareTests ();
+    { //for (int i = 0; i<100; i++)
+	      prepareTests ();
     }
     //---------------------------------------------------------------------------------------------
     virtual AFITCoin         FITCoinGen                    ( void ) override
@@ -21,6 +21,7 @@ class CCustomerTest : public CCustomer
     //---------------------------------------------------------------------------------------------
     virtual ACVUTCoin        CVUTCoinGen                   ( void ) override
     {
+    //usleep(10000);
       if ( m_CVUTIdx < m_TestsCVUT . size () )
         return m_TestsCVUT[m_CVUTIdx++] . first;
       else
@@ -29,7 +30,8 @@ class CCustomerTest : public CCustomer
     //---------------------------------------------------------------------------------------------
     virtual void             FITCoinAccept                 ( AFITCoin          x ) override
     {
-      auto it = find_if ( m_TestsFIT . begin (), m_TestsFIT . end (), 
+    //usleep(10000);
+      auto it = find_if ( m_TestsFIT . begin (), m_TestsFIT . end (),
                           [ x ] ( const pair<AFITCoin, size_t> & v )
       {
         return v . first == x;
@@ -42,7 +44,7 @@ class CCustomerTest : public CCustomer
     //---------------------------------------------------------------------------------------------
     virtual void             CVUTCoinAccept                ( ACVUTCoin         x ) override
     {
-      auto it = find_if ( m_TestsCVUT . begin (), m_TestsCVUT . end (), 
+      auto it = find_if ( m_TestsCVUT . begin (), m_TestsCVUT . end (),
                           [ x ] ( const pair<ACVUTCoin, size_t> & v )
       {
         return v . first == x;
@@ -71,11 +73,11 @@ class CCustomerTest : public CCustomer
       m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x406518a4, 0x412f1ca1, 0x406d1ca5 }, 2 ), 0 );
       m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x5cad9aeb, 0x7da99afb, 0x5d2992cb, 0x5d2992cb }, 4 ), 147 );
       m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x396070f3, 0x3b6070f2, 0x796070a2, 0x796470b2, 0x3a6470f3 }, 9 ), 3294848 );
-      m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x408543d7, 0x428543d6, 0x4a81c3d7, 0x48a1c3d6, 0x4aa143d7, 0x4a8dc3d7 }, 21 ), 3985193193 );
+    /*  m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x408543d7, 0x428543d6, 0x4a81c3d7, 0x48a1c3d6, 0x4aa143d7, 0x4a8dc3d7 }, 21 ), 3985193193 );
       m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0xe31d5fdc, 0xe1891fdc, 0xa19b7fde, 0xe3091ddc, 0xa39f6ddc, 0xe19b4fdc, 0xa11d5ddc }, 6 ), 337 );
       m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x5ba85e68, 0x3aa85e78, 0x5aaa5ef8, 0x1baa5efa, 0x7ba856ea, 0x5baa5e68, 0x5bb85678, 0x3aaa5668, 0x5aaa56fa, 0x1bba5e6a }, 1 ), 0 );
-      m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x72d8aa96, 0x64c8a296, 0x76d8aaf6, 0x64c0aafe, 0x76d8aa9a, 0x76d0aaba, 0x74c0aab2, 0x70c8aaba, 0x64d0aa96, 0x76c0aad2, 0x62c0a2be, 0x74d0aa96, 0x76c8a2f2, 0x74c8aafe, 0x76c8aada, 0x66c0aaf6, 0x70d0aab2, 0x66c0aab6, 0x60d0a29a, 0x76c8aad2, 0x74c8aab2, 0x66c0a2f2, 0x62d8aa96, 0x60d8a2d2, 0x76d8aada, 0x62c0aab6, 0x72d8aaf6, 0x74d0a2de, 0x64c8aab2, 0x60c0a2f2, 0x72d8a292, 0x60c8a2ba, 0x64c8aaf6, 0x72d0a296, 0x66c8a296, 0x64c0a292, 0x62c8aabe, 0x62c8a2b6, 0x76d0aabe, 0x76d8a2d6, 0x62d0aafa, 0x60d8a2fa, 0x74d0aada, 0x60c0aafa, 0x76c0a2f6, 0x74c0aab2, 0x70c0a2d2, 0x70d0aa9a, 0x62c0aada, 0x72d8aafa }, 12 ), 8084682 );
-  
+      m_TestsFIT . emplace_back ( make_shared<CFITCoin> ( vector<uint32_t>{ 0x72d8aa96, 0x64c8a296, 0x76d8aaf6, 0x64c0aafe, 0x76d8aa9a, 0x76d0aaba, 0x74c0aab2, 0x70c8aaba, 0x64d0aa96, 0x76c0aad2, 0x62c0a2be, 0x74d0aa96, 0x76c8a2f2, 0x74c8aafe, 0x76c8aada, 0x66c0aaf6, 0x70d0aab2, 0x66c0aab6, 0x60d0a29a, 0x76c8aad2, 0x74c8aab2, 0x66c0a2f2, 0x62d8aa96, 0x60d8a2d2, 0x76d8aada, 0x62c0aab6, 0x72d8aaf6, 0x74d0a2de, 0x64c8aab2, 0x60c0a2f2, 0x72d8a292, 0x60c8a2ba, 0x64c8aaf6, 0x72d0a296, 0x66c8a296, 0x64c0a292, 0x62c8aabe, 0x62c8a2b6, 0x76d0aabe, 0x76d8a2d6, 0x62d0aafa, 0x60d8a2fa, 0x74d0aada, 0x60c0aafa, 0x76c0a2f6, 0x74c0aab2, 0x70c0a2d2, 0x70d0aa9a, 0x62c0aada, 0x72d8aafa }, 12 ), 8084682 );*/
+
       m_TestsCVUT . emplace_back ( make_shared<CCVUTCoin> ( vector<uint8_t>{ 0x45, 0x23, 0x98, 0x48, 0xdc }, 0, 1 ), 10 );
       m_TestsCVUT . emplace_back ( make_shared<CCVUTCoin> ( vector<uint8_t>{ 0x5c, 0x94, 0x58, 0x1f, 0x7c }, 3, 8 ), 277 );
       m_TestsCVUT . emplace_back ( make_shared<CCVUTCoin> ( vector<uint8_t>{ 0x58, 0xd7, 0x41, 0x1e, 0xa9 }, 1, 12 ), 704 );
@@ -85,7 +87,7 @@ class CCustomerTest : public CCustomer
       m_TestsCVUT . emplace_back ( make_shared<CCVUTCoin> ( vector<uint8_t>{ 0xc4, 0x07, 0xfb, 0x5d, 0x50, 0xd7 }, 9, 14 ), 597 );
       m_TestsCVUT . emplace_back ( make_shared<CCVUTCoin> ( vector<uint8_t>{ 0xba, 0xe4, 0x30, 0xd9, 0x61, 0x89 }, 9, 29 ), 1549 );
       m_TestsCVUT . emplace_back ( make_shared<CCVUTCoin> ( vector<uint8_t>{ 0xb1, 0xa3, 0xa8, 0x5a, 0x84, 0xa8, 0xbd }, 15, 20 ), 729 );
-      m_TestsCVUT . emplace_back ( make_shared<CCVUTCoin> ( vector<uint8_t>{ 0x8c, 0xd0, 0xe0, 0x76, 0x9e, 0x24, 0x86, 0xc4 }, 19, 37 ), 1771 );
+     /* m_TestsCVUT . emplace_back ( make_shared<CCVUTCoin> ( vector<uint8_t>{ 0x8c, 0xd0, 0xe0, 0x76, 0x9e, 0x24, 0x86, 0xc4 }, 19, 37 ), 1771 );
       m_TestsCVUT . emplace_back ( make_shared<CCVUTCoin> ( vector<uint8_t>{ 0x1d, 0xf8, 0x86, 0xf5, 0xbd, 0x8d, 0xf0, 0x1a, 0xdd }, 6, 16 ), 1209 );
       m_TestsCVUT . emplace_back ( make_shared<CCVUTCoin> ( vector<uint8_t>{ 0xc8, 0xd4, 0xc2, 0xf8, 0xad, 0x23, 0x82, 0x5f, 0xc6, 0x2a }, 5, 43 ), 4970 );
       m_TestsCVUT . emplace_back ( make_shared<CCVUTCoin> ( vector<uint8_t>{ 0xb9, 0x4a, 0xd3, 0x77, 0xd7, 0xa4, 0x58, 0x4e, 0x42, 0x7c, 0xd4 }, 27, 70 ), 3806 );
@@ -103,24 +105,111 @@ class CCustomerTest : public CCustomer
       m_TestsCVUT . emplace_back ( make_shared<CCVUTCoin> ( vector<uint8_t>{ 0x9d, 0x82, 0x4e, 0x4d, 0x9e, 0xd4, 0x67, 0x64, 0xe7, 0x6e, 0x4c, 0xde, 0x8c, 0x3d, 0x8c, 0xd3, 0x2e, 0x8a, 0x2e, 0xe8, 0x36, 0x85, 0x85, 0xec, 0x48, 0x23, 0x2f, 0x3b, 0x0b, 0x28, 0x5e, 0xa8, 0xab, 0xac, 0xf6 }, 100, 210 ), 28425 );
       m_TestsCVUT . emplace_back ( make_shared<CCVUTCoin> ( vector<uint8_t>{ 0x4a, 0x80, 0x5d, 0xae, 0x68, 0xcc, 0xfb, 0x46, 0x58, 0x39, 0xd2, 0x2c, 0x67, 0x5d, 0x5a, 0x4f, 0x94, 0xdf, 0xd5, 0x81, 0x27, 0xf8, 0xb1, 0x63, 0x04, 0xd9, 0xc1, 0xac, 0x85, 0x6e, 0xa2, 0xcf, 0xef, 0x00, 0x7e, 0x57, 0xcd, 0x79, 0x9e, 0x25 }, 45, 300 ), 91049 );
       m_TestsCVUT . emplace_back ( make_shared<CCVUTCoin> ( vector<uint8_t>{ 0xb3, 0x71, 0x51, 0x1b, 0xcf, 0xab, 0x6b, 0x63, 0x8b, 0x41, 0xe4, 0xb2, 0x3a, 0x95, 0x16, 0x3e, 0x6f, 0xd8, 0xea, 0xf4, 0x46, 0x8d, 0xc3, 0x36, 0x8e, 0x42, 0x8d, 0x5b, 0xbb, 0x2c, 0x81, 0x6f, 0x9d, 0xd2, 0x8a, 0x6c, 0x7e, 0xf5, 0xd0, 0x09, 0x37, 0xb4, 0xbc, 0x71, 0x4a }, 176, 218 ), 14019 );
-      m_TestsCVUT . emplace_back ( make_shared<CCVUTCoin> ( vector<uint8_t>{ 0xd3, 0xaf, 0xb9, 0xab, 0x9a, 0xae, 0xf2, 0x28, 0x72, 0x28, 0xb7, 0xb4, 0xb6, 0x13, 0x70, 0xe2, 0x94, 0xdf, 0x80, 0x67, 0x6a, 0xed, 0xe5, 0x60, 0xbd, 0xef, 0x97, 0x72, 0xac, 0x08, 0xbd, 0x7f, 0xb8, 0x76, 0x2b, 0x53, 0x25, 0x1d, 0x7b, 0x97, 0x46, 0x32, 0x4c, 0xfc, 0x45, 0xbc, 0xdf, 0xda, 0x9c, 0x60 }, 245, 365 ), 22990 );
+      m_TestsCVUT . emplace_back ( make_shared<CCVUTCoin> ( vector<uint8_t>{ 0xd3, 0xaf, 0xb9, 0xab, 0x9a, 0xae, 0xf2, 0x28, 0x72, 0x28, 0xb7, 0xb4, 0xb6, 0x13, 0x70, 0xe2, 0x94, 0xdf, 0x80, 0x67, 0x6a, 0xed, 0xe5, 0x60, 0xbd, 0xef, 0x97, 0x72, 0xac, 0x08, 0xbd, 0x7f, 0xb8, 0x76, 0x2b, 0x53, 0x25, 0x1d, 0x7b, 0x97, 0x46, 0x32, 0x4c, 0xfc, 0x45, 0xbc, 0xdf, 0xda, 0x9c, 0x60 }, 245, 365 ), 22990 );*/
     }
 };
 //=================================================================================================
 void               TestParallel                            ( void )
 {
-  CRig   s;
+  CRig   o,p,q,r,s,t,u,v,w,x,y,z ;
   
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . Start ( 2 );
-  s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . Stop ();
+ 		
+ 		 /* o . Start ( 8 );
+		  o . AddCustomer ( make_shared<CCustomerTest> () );
+		  o . Stop ();
+		 cout << " -------------- O -> P ---------------" << endl;
+		  p . AddCustomer ( make_shared<CCustomerTest> () );
+		  p . Start ( 1 );
+		  p . AddCustomer ( make_shared<CCustomerTest> () );
+		  p . Stop ();
+		  cout << " -------------- P -> Q ---------------" << endl;
+		  q . AddCustomer ( make_shared<CCustomerTest> () );
+		  q . AddCustomer ( make_shared<CCustomerTest> () );
+		  q . Start ( 80 );
+		  q . Stop ();
+	  	  cout << " -------------- Q -> R ---------------" << endl;
+	  	  r . AddCustomer ( make_shared<CCustomerTest> () );
+		  r . Start ( 20 );
+		  r . AddCustomer ( make_shared<CCustomerTest> () );
+		  r . Stop ();
+		  cout << " -------------- R -> S ---------------" << endl;
+		  s . AddCustomer ( make_shared<CCustomerTest> () );
+		  s . Start ( 4 );
+		  s . AddCustomer ( make_shared<CCustomerTest> () );
+		  s . Stop ();
+		  cout << " -------------- S -> T ---------------" << endl;
+		  t . AddCustomer ( make_shared<CCustomerTest> () );
+		  t . Start ( 80 );
+		 for (int i=0; i< 100; i++) 
+			  t . AddCustomer ( make_shared<CCustomerTest> () );
+		
+		  t . Stop (); 
+		  cout << " -------------- T -> U ---------------" << endl;
+		  u . AddCustomer ( make_shared<CCustomerTest> () );
+		  u . AddCustomer ( make_shared<CCustomerTest> () );
+		  u . Start ( 100 );
+		  u . Stop (); 
+	  	  cout << " -------------- U -> V ---------------" << endl;
+	  	  v . AddCustomer ( make_shared<CCustomerTest> () );
+		  v . Start ( 70 );  
+		  v . AddCustomer ( make_shared<CCustomerTest> () );
+		  v . Stop ();
+		  cout << " -------------- V -> W ---------------" << endl;
+		  w . AddCustomer ( make_shared<CCustomerTest> () );
+		  w . Start ( 120 );
+		  w . AddCustomer ( make_shared<CCustomerTest> () );
+		  w . Stop ();
+		  cout << " -------------- W -> X ---------------" << endl;
+		  x . AddCustomer ( make_shared<CCustomerTest> () );
+		  x . Start ( 50 );
+		 for (int i=0; i< 100; i++) {
+			  x . AddCustomer ( make_shared<CCustomerTest> () );
+		}
+		  x . Stop ();
+		cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 1.0" << endl;
+		  s . Start ( 90 );
+		  s . AddCustomer ( make_shared<CCustomerTest> () );
+		  s . Stop ();*/
+		cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 2.0" << endl;
+		  s . AddCustomer ( make_shared<CCustomerTest> () );
+		  s . Start ( 80 );
+		  s . Stop ();
+		cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 3.0" << endl;
+		  s . Start ( 80 );
+		  s . Stop ();
+		cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 4.0" << endl;
+		  s . AddCustomer ( make_shared<CCustomerTest> () );
+		  s . Start ( 40 );
+		  s . Stop ();
+		cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 5.0" << endl;
+		  s . Start ( 80 );
+		  s . AddCustomer ( make_shared<CCustomerTest> () );
+		  s . Stop ();
+		cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 6.0" << endl;
+		  s . AddCustomer ( make_shared<CCustomerTest> () );
+		  s . Start ( 80 );
+		  for (int i=0; i< 100; i++) {
+			  s . AddCustomer ( make_shared<CCustomerTest> () );
+		}
+		  s . Stop ();
+		cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 7.0" << endl;
+		  s . AddCustomer ( make_shared<CCustomerTest> () );
+		  s . Start ( 80 );
+		  s . AddCustomer ( make_shared<CCustomerTest> () );
+		  s . AddCustomer ( make_shared<CCustomerTest> () );
+		  s . Stop ();
+		  for (int i=0; i< 100; i++) {
+			  s . AddCustomer ( make_shared<CCustomerTest> () );
+		}
+		  s . Stop ();
+		
+
 }
 //=================================================================================================
 void               TestSequential                          ( void )
 {
   CCustomerTest c;
-  
+
   for ( AFITCoin x = c . FITCoinGen (); x ; x = c . FITCoinGen () )
   {
     CRig::Solve ( x );
@@ -136,7 +225,7 @@ void               TestSequential                          ( void )
 //=================================================================================================
 int                main                                    ( void )
 {
-  TestSequential ();
+ //TestSequential ();
   TestParallel ();
   return 0;
 }
