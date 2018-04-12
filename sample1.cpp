@@ -184,8 +184,7 @@ class CRig
     sem_t semCoinEmpty;
     sem_t semCoinFull;
     int wrkThrRunning;
-    bool allFitCoins;
-    bool allCvutCoins;
+    int workLoad;
 
 };
 
@@ -515,11 +514,13 @@ CRig::CRig (void) {
     workCount = 0;
     sem_init ( &semCoinEmpty, 0, 100 );
     sem_init ( &semCoinFull, 0, 0 );
+    workLoad = 0;
 }
 
 //--------------------------------------- Parallel solution metods ----------------------------------------
 
 void CRig::AddCustomer (ACustomer c) {
+   workLoad += 2;
 
    // printf("---AddCustomer\n");
     CustomerWrapper customer(c);
@@ -539,7 +540,6 @@ void CRig::AddCustomer (ACustomer c) {
 
 void CRig::AddFitCoins(ACustomer c, int custIdx) {
     printf("----Inside addfitCoins method %d\n", custIdx);
-    allFitCoins = false;
 
     int i = 1;
     for ( AFITCoin x = c -> FITCoinGen (); x ; x = c -> FITCoinGen () ) {
@@ -558,12 +558,11 @@ void CRig::AddFitCoins(ACustomer c, int custIdx) {
     }
 
     printf("----added all fit coins from customer %d\n", custIdx);
-    allFitCoins = true;
+    workLoad--;
 }
 
 void CRig::AddCvutCoins(ACustomer c, int custIdx) {
     printf("-----Inside addcvutCoins method %d\n", custIdx);
-    allCvutCoins = false;
 
     int i = 1;
     for ( ACVUTCoin x = c -> CVUTCoinGen (); x ; x = c -> CVUTCoinGen () ) {
@@ -583,7 +582,7 @@ void CRig::AddCvutCoins(ACustomer c, int custIdx) {
 
 
     printf("-----added all cvut coins from customer %d\n", custIdx);
-    allCvutCoins = true;
+    workLoad--;
 }
 
 void CRig::Start (int thrCnt) {
@@ -595,7 +594,7 @@ void CRig::Start (int thrCnt) {
 }
 
 void CRig::SolveCoin(int thrID) {
-    printf("-----SolveCoin %d\n", thrID);
+   printf("-----SolveCoin %d\n", thrID);
     while(1) {
 
         //semafor
@@ -624,7 +623,7 @@ void CRig::SolveCoin(int thrID) {
         sem_post(& (customers[coin.customerIdx].semCusFull)); //personal semaphore of customer
 
         //konec
-        if((coinBuffer.size() == 0 ) && allCvutCoins && allFitCoins && endFlag) { //buffer je prazdny a zaroven fce Stop() nastavila endflag
+        if((coinBuffer.size() == 0 ) && endFlag && !workLoad) { //buffer je prazdny a zaroven fce Stop() nastavila endflag
             mtxSolved.lock();
                 wrkThrRunning--;
             mtxSolved.unlock();
@@ -668,7 +667,7 @@ void CRig::AcceptCoin(ACustomer c, int idx) {
 
         }
         //konec
-        if(endFlag && (workCount == 0) && (wrkThrRunning == 0) && allCvutCoins && allFitCoins ) { //buffer je prazdny a zaroven fce Stop() nastavila endflag
+        if(endFlag && (workCount == 0) && (wrkThrRunning == 0) && !workLoad ) { //buffer je prazdny a zaroven fce Stop() nastavila endflag
             printf("End of acceptCoin for customer %d\n",idx);
             break;
         }
