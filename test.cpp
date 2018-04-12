@@ -21,8 +21,11 @@ class CCustomerTest : public CCustomer
     //---------------------------------------------------------------------------------------------
     virtual ACVUTCoin        CVUTCoinGen                   ( void ) override
     {
-      if ( m_CVUTIdx < m_TestsCVUT . size () )
+      if ( m_CVUTIdx < m_TestsCVUT . size () ) {
+          //  printf("prodleva\n");
+          //  sleep (2);
         return m_TestsCVUT[m_CVUTIdx++] . first;
+      }
       else
         return ACVUTCoin ();
     }
