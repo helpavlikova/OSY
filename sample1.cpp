@@ -595,7 +595,7 @@ void CRig::Start (int thrCnt) {
 void CRig::SolveCoin(int thrID) {
    // printf("-----SolveCoin %d\n", thrID);
     while(1) {
-       // if(coinBuffer. size() > 0 ) {
+
             //semafor
             sem_wait(&semCoinFull); //dekrementuje zastavi se, je-li buffer prazny
 
@@ -621,7 +621,7 @@ void CRig::SolveCoin(int thrID) {
             sem_post(&semCoinEmpty); //global semaphore of coinBuffer
             sem_post(& (customers[coin.customerIdx].semCusFull)); //personal semaphore of customer
 
-       // }
+
         //konec
         if((coinBuffer.size() == 0 ) && endFlag && !workLoad) { //buffer je prazdny a zaroven fce Stop() nastavila endflag
             mtxSolved.lock();
@@ -638,7 +638,7 @@ void CRig::AcceptCoin(ACustomer c, int idx) {
     // printf("inside AcceptCoin %d\n", idx);
 
     while (1) {
-       // if(customers[idx].solvedCoins. size() > 0 ) {
+
             sem_wait(& (customers[idx].semCusFull));
 
             //vybrat
@@ -665,7 +665,7 @@ void CRig::AcceptCoin(ACustomer c, int idx) {
 
             sem_post(& (customers[idx].semCusEmpty));
 
-        //}
+
 
         //konec
         if(endFlag && (workCount == 0) && (wrkThrRunning == 0) && !workLoad ) { //buffer je prazdny a zaroven fce Stop() nastavila endflag
