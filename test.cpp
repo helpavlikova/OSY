@@ -124,7 +124,7 @@ void               TestParallel                            ( void )
 
   s . AddCustomer ( make_shared<CCustomerTest> () );
   s . Start ( 80 );
-//  s . AddCustomer ( make_shared<CCustomerTest> () );
+ // s . AddCustomer ( make_shared<CCustomerTest> () );
  // s . AddCustomer ( make_shared<CCustomerTest> () );
  // s . AddCustomer ( make_shared<CCustomerTest> () );
   s . Stop ();
