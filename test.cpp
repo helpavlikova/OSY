@@ -123,8 +123,11 @@ void               TestParallel                            ( void )
   CRig   s;
 
   s . AddCustomer ( make_shared<CCustomerTest> () );
-  s . Start ( 1 );
-//  s . AddCustomer ( make_shared<CCustomerTest> () );
+  s . Start ( 10 );
+  s . AddCustomer ( make_shared<CCustomerTest> () );
+  s . AddCustomer ( make_shared<CCustomerTest> () );
+  s . AddCustomer ( make_shared<CCustomerTest> () );
+  s . AddCustomer ( make_shared<CCustomerTest> () );
   s . Stop ();
 }
 //=================================================================================================
