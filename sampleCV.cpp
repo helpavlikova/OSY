@@ -98,8 +98,7 @@ class CCustomer
 
 mutex mtxCoinBuffer;
 mutex mtxSolved;
-mutex mtx1;
-mutex mtx2;
+mutex mtx;
 
 class CCoin {
 public:
@@ -117,24 +116,34 @@ private:
 
 void CCoin::printCoin() {
     if (isFit) {
-        // //printf("FITCoin %d: distMax: %d (%zu)\n", ID, fitCoin->m_DistMax,  fitCoin->m_Count);
+        // printf("FITCoin %d: distMax: %d (%zu)\n", ID, fitCoin->m_DistMax,  fitCoin->m_Count);
     } else {
-        // //printf ("CVUTCoin %d: <distMin, distMax>: <%d,%d> (%zu)\n", ID, cvutCoin->m_DistMin, cvutCoin->m_DistMax, cvutCoin->m_Count);
+        // printf ("CVUTCoin %d: <distMin, distMax>: <%d,%d> (%zu)\n", ID, cvutCoin->m_DistMin, cvutCoin->m_DistMax, cvutCoin->m_Count);
     }
 }
 
 class CustomerWrapper {
 public:
-    CustomerWrapper(ACustomer newCustomer): customerRef(newCustomer) {
-        sem_init ( &semCusEmpty, 0, 100 );
-        sem_init ( &semCusFull, 0, 0 );
-    }
+    CustomerWrapper(ACustomer newCustomer, int cvIndex): customerRef(newCustomer), cvID(cvIndex) { }
+    ~CustomerWrapper() { }
+    bool isFull() const;
+    bool isEmpty() const;
     ACustomer customerRef;
+    condition_variable  cond;
     deque<CCoin> solvedCoins;
-    sem_t semCusEmpty; //personal semaphore for each customer
-    sem_t semCusFull;
+    int cvID;
 private:
 };
+
+bool CustomerWrapper::isFull() const
+    {
+        return solvedCoins.size() >= 100;
+}
+
+bool CustomerWrapper::isEmpty() const
+    {
+        return solvedCoins.size() == 0;
+}
 
 class CRig
 {
@@ -171,6 +180,8 @@ class CRig
     void AddCvutCoins(ACustomer c,  int custIdx);
     void AcceptCoin(ACustomer c, int idx);
     void SolveCoin(int thrID);
+    bool isFull() const;
+    bool isEmpty() const;
     static int FITtestCounter;
     static int CVUTtestCounter;
     static int bitsLen;
@@ -178,7 +189,7 @@ class CRig
     deque<CCoin> coinBuffer;
     vector<thread> workThreads;
     vector<thread> customerThreads;
-    vector<CustomerWrapper> customers;
+    vector<reference_wrapper<CustomerWrapper> >customers;
     bool endFlag;
     int customerCounter;
     int workCount;
@@ -200,9 +211,9 @@ int CRig::customerIndex = 0;
 
 void CRig::printCustomers(){
     for (unsigned i = 0; i < customers.size(); i++) {
-        // //printf ("customer %d:\n",i);
-        for (unsigned j = 0; j < customers[i]. solvedCoins . size (); j ++) {
-            customers[i]. solvedCoins[j].printCoin();
+        // printf ("customer %d:\n",i);
+        for (unsigned j = 0; j < customers[i].  get () .solvedCoins . size (); j ++) {
+            customers[i]-> solvedCoins[j].printCoin();
         }
     }
 }
@@ -216,48 +227,48 @@ void CRig::bin(unsigned n, int len) {
 
 void CRig::printBinary(int i, int j, int diff, int mask) {
     bin(i, bitsLen);
-    // //printf(" (%d) XOR\n",i);
+    // printf(" (%d) XOR\n",i);
     bin(j, bitsLen);
-    // //printf(" is:\n");
+    // printf(" is:\n");
     bin(mask, bitsLen);
-    // //printf(" = %d\n", diff);
-    // //printf("-----------------------\n");
+    // printf(" = %d\n", diff);
+    // printf("-----------------------\n");
 }
 
 void CRig::printVectors(vector<int>& vectors) {
     for (unsigned int i = 0; i < vectors.size(); i++) {
-        // //printf(" %d ", vectors[i]);
+        // printf(" %d ", vectors[i]);
     }
-    // //printf("\n");
+    // printf("\n");
 }
 
 void CRig::printVectors(vector<uint32_t>& vectors) {
     for (unsigned int i = 0; i < vectors.size(); i++) {
         bin(vectors[i], bitsLen);
-        // //printf("\n");
+        // printf("\n");
     }
-    // //printf("\n");
+    // printf("\n");
 }
 
 void CRig::printVectors(vector<uint8_t>& vectors) {
     for (unsigned int i = 0; i < vectors.size(); i++) {
         bin(vectors[i], 8);
-        // //printf("\n");
+        // printf("\n");
     }
-    // //printf("\n");
+    // printf("\n");
 }
 
 void CRig::printVectors(vector<bool>& vectors) {
     for (unsigned int i = 0; i < vectors.size(); i++) {
-        // //printf("%d",  static_cast<int>(vectors[i]));
+        // printf("%d",  static_cast<int>(vectors[i]));
     }
-    // //printf("\n");
+    // printf("\n");
 }
 
 void CRig::printBuffer() {
     int i = 0;
     for ( auto it = this->coinBuffer . begin (); it != this->coinBuffer . end (); it++ ) {
-        // //printf ("[%d] %d ",i, it -> customerIdx );
+        // printf ("[%d] %d ",i, it -> customerIdx );
         it -> printCoin();
         i++;
     }
@@ -414,7 +425,7 @@ void CRig::Solve (AFITCoin x) {
     }
 
     FITtestCounter++;
-  //  // //printf("FITtest %d: result: %zu\n", FITtestCounter, x->m_Count);
+  //  // printf("FITtest %d: result: %zu\n", FITtestCounter, x->m_Count);
 
 }
 
@@ -503,7 +514,7 @@ void CRig::Solve (ACVUTCoin x) {
     findPrefixSuffix(x, boolVector);
 
     CVUTtestCounter++;
-   // // //printf("CVUTtest %d: result: %zu\n", CVUTtestCounter, x->m_Count);
+   // // printf("CVUTtest %d: result: %zu\n", CVUTtestCounter, x->m_Count);
 }
 
 CRig::CRig (void) {
@@ -522,12 +533,14 @@ CRig::CRig (void) {
 
 //--------------------------------------- Parallel solution metods ----------------------------------------
 
+
+
 void CRig::AddCustomer (ACustomer c) {
    workLoad += 2;
    custRunning++;
 
-   // // //printf("---AddCustomer\n");
-    CustomerWrapper customer(c);
+   // // printf("---AddCustomer\n");
+    CustomerWrapper customer(c, customerIndex);
 
 
     customerThreads . push_back ( thread (&CRig::AddFitCoins, this, c, customerIndex) ); //thread to add fitcoins
@@ -536,20 +549,20 @@ void CRig::AddCustomer (ACustomer c) {
 
 
     customers.push_back(customer);
-    //printf("pushed customer %d to the customer vector\n", customerIndex);
+    printf("pushed customer %d to the customer vector\n", customerIndex);
 
     customerIndex++; //index to tell which customer the coin belongs to
-   // // //printf("customer index = %d\n", customerIndex);
+   // // printf("customer index = %d\n", customerIndex);
 
 }
 
 void CRig::AddFitCoins(ACustomer c, int custIdx) {
-     //printf("----Inside addfitCoins method %d\n", custIdx);
+     printf("----Inside addfitCoins method %d\n", custIdx);
 
     int i = 1;
     for ( AFITCoin x = c -> FITCoinGen (); x ; x = c -> FITCoinGen () ) {
         CCoin newFitCoin(true, x, nullptr, custIdx, (custIdx + 1 ) * 100 + i);
-     //   // //printf("[%d]----Adding a fitCoin %d\n",custIdx, custIdx * 100 + i);
+     //   // printf("[%d]----Adding a fitCoin %d\n",custIdx, custIdx * 100 + i);
 
         sem_wait(&semCoinEmpty); //zastavime se, je li buffer plny
 
@@ -562,17 +575,17 @@ void CRig::AddFitCoins(ACustomer c, int custIdx) {
         sem_post(&semCoinFull); //zvyseni semaforu, signal konzumentovi SolveCoin
     }
 
-     //printf("----added all fit coins from customer %d\n", custIdx);
+     printf("----added all fit coins from customer %d\n", custIdx);
     workLoad--;
 }
 
 void CRig::AddCvutCoins(ACustomer c, int custIdx) {
-     //printf("-----Inside addcvutCoins method %d\n", custIdx);
+     printf("-----Inside addcvutCoins method %d\n", custIdx);
 
     int i = 1;
     for ( ACVUTCoin x = c -> CVUTCoinGen (); x ; x = c -> CVUTCoinGen () ) {
         CCoin newCvutCoin(false, nullptr, x, custIdx, (custIdx + 1 )* 1000 + i);
-      //  // //printf("[%d]----Adding a cvutCoin %d\n",custIdx, custIdx * 1000 + i);
+      //  // printf("[%d]----Adding a cvutCoin %d\n",custIdx, custIdx * 1000 + i);
 
         sem_wait(&semCoinEmpty);
 
@@ -586,7 +599,7 @@ void CRig::AddCvutCoins(ACustomer c, int custIdx) {
     }
 
 
-     //printf("-----added all cvut coins from customer %d\n", custIdx);
+     printf("-----added all cvut coins from customer %d\n", custIdx);
     workLoad--;
 }
 
@@ -599,8 +612,8 @@ void CRig::Start (int thrCnt) {
 }
 
 void CRig::SolveCoin(int thrID) {
-    int value;
- //   //printf("-----SolveCoin %d\n", thrID);
+    unique_lock<mutex> lock(mtx);
+ //   printf("-----SolveCoin %d\n", thrID);
     while(1) {
             //semafor
             sem_wait(&semCoinFull); //dekrementuje zastavi se, je-li buffer prazny
@@ -610,7 +623,7 @@ void CRig::SolveCoin(int thrID) {
                 mtxSolved.lock();
                     wrkThrRunning--;
                 mtxSolved.unlock();
-                 //printf("End of SolveCoin %d, so far %d work threads are still running \n",thrID, wrkThrRunning);
+                 printf("End of SolveCoin %d, so far %d work threads are still running \n",thrID, wrkThrRunning);
                 break;
             }
 
@@ -620,10 +633,11 @@ void CRig::SolveCoin(int thrID) {
                     coinBuffer.pop_front();
                 mtxCoinBuffer.unlock();
 
-
-                sem_wait(& (customers[coin.customerIdx].semCusEmpty)); //personal semaphore of customer
-
                 sem_post(&semCoinEmpty); //global semaphore of coinBuffer
+
+
+                customers. at(coin.customerIdx) -> cond.wait(lock, [this, &coin]() { return ! ( customers. at (coin.customerIdx)->isFull() ); });
+
 
                 //solve
                 if(coin.isFit)
@@ -634,14 +648,14 @@ void CRig::SolveCoin(int thrID) {
 
                //ulozit
                 mtxSolved.lock();
-                    customers[coin.customerIdx].solvedCoins.push_back(coin);
+                    customers. at(coin.customerIdx)->solvedCoins.push_back(coin);
                 mtxSolved.unlock();
 
-                //printf("[%d]Solve gave accept the coin %d\n", coin.customerIdx, coin.ID );
+                printf("[%d]Solve gave accept the coin %d\n", coin.customerIdx, coin.ID );
 
-                sem_post(& (customers[coin.customerIdx].semCusFull)); //personal semaphore of customer
-                sem_getvalue(& (customers[coin.customerIdx].semCusFull), &value);
-                //printf("semaphore of customer %d is %d\n", coin.customerIdx, value);
+
+                lock.unlock();
+                customers. at (coin.customerIdx)->cond.notify_all();
 
     }
 
@@ -649,55 +663,55 @@ void CRig::SolveCoin(int thrID) {
 }
 
 void CRig::AcceptCoin(ACustomer c, int idx) {
-    int value;
-     //printf("inside AcceptCoin %d\n", idx);
+    unique_lock<mutex> lock(mtx);
+     printf("inside AcceptCoin %d\n", idx);
 
     while (1) {
-        sem_getvalue(& (customers[idx].semCusFull), &value);
-        //printf("Before semaphore AcceptCoin [%d] semValue %d, workcount = %d, workLoad = %d\n", idx, value, workCount, workLoad);
 
-            sem_wait(& (customers[idx].semCusFull));
-            //printf("After semaphore AcceptCoin [%d] semValue %d, workcount = %d, workLoad = %d\n", idx, value, workCount, workLoad);
+        customers. at(idx)->cond.wait(lock, [this, &idx]()
+        { return ! ( customers. at(idx)->isEmpty() ); });
 
             //konec
             if(endFlag && (workCount == 0) && !workLoad ) { //buffer je prazdny a zaroven fce Stop() nastavila endflag
-                 //printf("End of acceptCoin for customer %d\n",idx);
+                 printf("End of acceptCoin for customer %d\n",idx);
                 break;
             }
 
             //vybrat
             mtxSolved.lock();
-                CCoin coin = customers[idx].solvedCoins.front();
-                customers[idx].solvedCoins.pop_front();
+                CCoin coin = customers. at(idx)->solvedCoins.front();
+                customers .at(idx)->solvedCoins.pop_front();
             mtxSolved.unlock();
 
             //odevzdat
             if(coin.isFit) {
-                 //printf("[%d] accepting fitCoin %d (result %zu)\n", idx, coin.ID, coin.fitCoin->m_Count);
+                 printf("[%d] accepting fitCoin %d (result %zu)\n", idx, coin.ID, coin.fitCoin->m_Count);
               //  coin.printCoin();
                 c -> FITCoinAccept (coin.fitCoin);
             }
             else {
-                 //printf("[%d] accepting cvutCoin %d (result %zu) \n", idx, coin.ID, coin.cvutCoin->m_Count);
+                 printf("[%d] accepting cvutCoin %d (result %zu) \n", idx, coin.ID, coin.cvutCoin->m_Count);
               //  coin.printCoin();
                 c -> CVUTCoinAccept (coin.cvutCoin);
             }
 
-            mtx1.lock();
+            mtxSolved.lock();
                 workCount--;
-            mtx1.unlock();
+            mtxSolved.unlock();
 
-            sem_post(& (customers[idx].semCusEmpty));
+
+        lock.unlock();
+        customers. at(coin.customerIdx)->cond.notify_all();
 
     }
-    mtx2.lock();
+    mtxSolved.lock();
         custRunning--;
-    mtx2.unlock();
+    mtxSolved.unlock();
 
     if  (wrkThrRunning > 0) {
-        //printf("getting rid of remaining Solve threads\n");
+        printf("getting rid of remaining Solve threads\n");
         while(wrkThrRunning) {
-           // //printf("semaphore++\n");
+           // printf("semaphore++\n");
             sem_post(&semCoinFull); //zvyseni semaforu, signal konzumentovi SolveCoin
         }
     }
@@ -705,18 +719,8 @@ void CRig::AcceptCoin(ACustomer c, int idx) {
 }
 
 void CRig::Stop (void) {
-     //printf("------STOP---Calling stop function\n");
+     printf("------STOP---Calling stop function\n");
     endFlag = true; // indikator konce pro funkci SolveCoin
-
-
-    while(custRunning) {
-        if( (workCount == 0) && !workLoad ) {
-                 for (unsigned i = 0; i < customers. size(); i++) {
-                    // //printf("attempting to increment semaphore for customer %d\n",i);
-                     sem_post(& (customers[i].semCusFull));
-                 }
-        }
-    }
 
             //wait for customer threads
             for ( auto & th : customerThreads ) {
@@ -730,7 +734,7 @@ void CRig::Stop (void) {
             }
 
 
-     //printf("collected all threads\n");
+     printf("collected all threads\n");
 
     if (coinBuffer . size () > 0)
         printCustomers();

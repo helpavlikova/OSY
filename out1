@@ -1,0 +1,113 @@
+-----Inside addcvutCoins method 0
+pushed customer 0 to the customer vector
+----Inside addfitCoins method 0
+inside AcceptCoin 0
+-----added all cvut coins from customer 0
+----added all fit coins from customer 0
+pushed customer 1 to the customer vector
+------STOP---Calling stop function
+inside AcceptCoin 1
+----Inside addfitCoins method 1
+----added all fit coins from customer 1
+-----Inside addcvutCoins method 1
+-----added all cvut coins from customer 1
+[0]Solve gave accept the coin 1001
+semaphore of customer 0 is 1
+[0]Solve gave accept the coin 1003
+semaphore of customer 0 is 2
+[0]Solve gave accept the coin 1002
+semaphore of customer 0 is 3
+[0]Solve gave accept the coin 1004
+semaphore of customer 0 is 4
+[0]Solve gave accept the coin 1006
+semaphore of customer 0 is 5
+[0]Solve gave accept the coin 1005
+semaphore of customer 0 is 6
+[0]Solve gave accept the coin 101
+semaphore of customer 0 is 7
+[0]Solve gave accept the coin 102
+semaphore of customer 0 is 8
+[0]Solve gave accept the coin 103
+semaphore of customer 0 is 9
+[0]Solve gave accept the coin 104
+semaphore of customer 0 is 10
+[0]Solve gave accept the coin 105
+semaphore of customer 0 is 11
+[0]Solve gave accept the coin 106
+semaphore of customer 0 is 12
+[0]Solve gave accept the coin 107
+semaphore of customer 0 is 13
+[0]Solve gave accept the coin 108
+semaphore of customer 0 is 14
+[0]Solve gave accept the coin 109
+semaphore of customer 0 is 15
+[0]Solve gave accept the coin 110
+semaphore of customer 0 is 16
+[0]Solve gave accept the coin 111
+semaphore of customer 0 is 17
+[0]Solve gave accept the coin 112
+semaphore of customer 0 is 18
+[0]Solve gave accept the coin 113
+semaphore of customer 0 is 19
+[0]Solve gave accept the coin 114
+semaphore of customer 0 is 20
+[1]Solve gave accept the coin 201
+AcceptCoin 1 semValue 0, workcount = 48, workLoad = 0
+[1] accepting fitCoin 201 (result 1)
+semaphore of customer 1 is 0
+[1]Solve gave accept the coin 202
+AcceptCoin 1 semValue 0, workcount = 47, workLoad = 0
+[1] accepting fitCoin 202 (result 33)
+semaphore of customer 1 is 0
+[1]Solve gave accept the coin 203
+AcceptCoin 1 semValue 0, workcount = 46, workLoad = 0
+[1] accepting fitCoin 203 (result 1846943453)
+semaphore of customer 1 is 0
+[1]Solve gave accept the coin 204
+AcceptCoin 1 semValue 0, workcount = 45, workLoad = 0
+[1] accepting fitCoin 204 (result 2448023843)
+semaphore of customer 1 is 0
+[1]Solve gave accept the coin 205
+AcceptCoin 1 semValue 0, workcount = 44, workLoad = 0
+[1] accepting fitCoin 205 (result 3013746563)
+semaphore of customer 1 is 0
+[1]Solve gave accept the coin 206
+AcceptCoin 1 semValue 0, workcount = 43, workLoad = 0
+[1] accepting fitCoin 206 (result 4294967295)
+semaphore of customer 1 is 0
+[1]Solve gave accept the coin 207
+AcceptCoin 1 semValue 0, workcount = 42, workLoad = 0
+[1] accepting fitCoin 207 (result 4294967296)
+semaphore of customer 1 is 0
+[1]Solve gave accept the coin 208
+AcceptCoin 1 semValue 0, workcount = 41, workLoad = 0
+[1] accepting fitCoin 208 (result 0)
+semaphore of customer 1 is 0
+[1]Solve gave accept the coin 209
+AcceptCoin 1 semValue 0, workcount = 40, workLoad = 0
+[1] accepting fitCoin 209 (result 147)
+semaphore of customer 1 is 0
+[1]Solve gave accept the coin 210
+AcceptCoin 1 semValue 0, workcount = 39, workLoad = 0
+[1] accepting fitCoin 210 (result 3294848)
+semaphore of customer 1 is 0
+[1]Solve gave accept the coin 211
+AcceptCoin 1 semValue 0, workcount = 38, workLoad = 0
+[1] accepting fitCoin 211 (result 3985193193)
+semaphore of customer 1 is 0
+[1]Solve gave accept the coin 212
+AcceptCoin 1 semValue 0, workcount = 37, workLoad = 0
+[1] accepting fitCoin 212 (result 337)
+semaphore of customer 1 is 0
+[1]Solve gave accept the coin 213
+AcceptCoin 1 semValue 0, workcount = 36, workLoad = 0
+[1] accepting fitCoin 213 (result 0)
+semaphore of customer 1 is 0
+[1]Solve gave accept the coin 214
+AcceptCoin 1 semValue 0, workcount = 35, workLoad = 0
+[1] accepting fitCoin 214 (result 8084682)
+semaphore of customer 1 is 0
+[1]Solve gave accept the coin 2001
+AcceptCoin 1 semValue 0, workcount = 34, workLoad = 0
+[1] accepting cvutCoin 2001 (result 10) 
+semaphore
