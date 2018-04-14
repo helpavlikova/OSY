@@ -213,7 +213,7 @@ void CRig::printCustomers(){
     for (unsigned i = 0; i < customers.size(); i++) {
         // printf ("customer %d:\n",i);
         for (unsigned j = 0; j < customers[i].  get () .solvedCoins . size (); j ++) {
-            customers[i]-> solvedCoins[j].printCoin();
+            customers[i]. get () . solvedCoins[j].printCoin();
         }
     }
 }
@@ -636,7 +636,7 @@ void CRig::SolveCoin(int thrID) {
                 sem_post(&semCoinEmpty); //global semaphore of coinBuffer
 
 
-                customers. at(coin.customerIdx) -> cond.wait(lock, [this, &coin]() { return ! ( customers. at (coin.customerIdx)->isFull() ); });
+                customers. at(coin.customerIdx) . get () . cond.wait(lock, [this, &coin]() { return ! ( customers. at (coin.customerIdx). get () .isFull() ); });
 
 
                 //solve
@@ -648,14 +648,14 @@ void CRig::SolveCoin(int thrID) {
 
                //ulozit
                 mtxSolved.lock();
-                    customers. at(coin.customerIdx)->solvedCoins.push_back(coin);
+                    customers. at(coin.customerIdx). get () .solvedCoins.push_back(coin);
                 mtxSolved.unlock();
 
                 printf("[%d]Solve gave accept the coin %d\n", coin.customerIdx, coin.ID );
 
 
                 lock.unlock();
-                customers. at (coin.customerIdx)->cond.notify_all();
+                customers. at (coin.customerIdx). get () .cond.notify_all();
 
     }
 
@@ -668,8 +668,8 @@ void CRig::AcceptCoin(ACustomer c, int idx) {
 
     while (1) {
 
-        customers. at(idx)->cond.wait(lock, [this, &idx]()
-        { return ! ( customers. at(idx)->isEmpty() ); });
+        customers. at(idx). get () .cond.wait(lock, [this, &idx]()
+        { return ! ( customers. at(idx). get () .isEmpty() ); });
 
             //konec
             if(endFlag && (workCount == 0) && !workLoad ) { //buffer je prazdny a zaroven fce Stop() nastavila endflag
@@ -679,8 +679,8 @@ void CRig::AcceptCoin(ACustomer c, int idx) {
 
             //vybrat
             mtxSolved.lock();
-                CCoin coin = customers. at(idx)->solvedCoins.front();
-                customers .at(idx)->solvedCoins.pop_front();
+                CCoin coin = customers. at(idx). get () .solvedCoins.front();
+                customers .at(idx). get () .solvedCoins.pop_front();
             mtxSolved.unlock();
 
             //odevzdat
@@ -701,7 +701,7 @@ void CRig::AcceptCoin(ACustomer c, int idx) {
 
 
         lock.unlock();
-        customers. at(coin.customerIdx)->cond.notify_all();
+        customers. at(coin.customerIdx). get () .cond.notify_all();
 
     }
     mtxSolved.lock();
